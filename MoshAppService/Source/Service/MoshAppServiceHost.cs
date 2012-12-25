@@ -1,0 +1,69 @@
+﻿// Project: MoshAppService
+// Filename: MoshAppServiceHost.cs
+// 
+// Author: Jason Recillo
+
+using System;
+using System.Collections.Generic;
+using System.Net;
+
+using Funq;
+
+using JetBrains.Annotations;
+
+using MoshAppService.Service.Security;
+using MoshAppService.Utils;
+
+using ServiceStack.Common;
+using ServiceStack.Common.Web;
+using ServiceStack.Logging;
+using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
+
+namespace MoshAppService.Service {
+    [PublicAPI]
+    public class MoshAppServiceHost : AppHostBase {
+        private static readonly ILog Log;
+
+        static MoshAppServiceHost() {
+            Log = LogManager.GetLogger(typeof(MoshAppServiceHost));
+        }
+
+        public MoshAppServiceHost()
+            : base("MOSHApp", typeof(MoshAppServiceHost).Assembly) { }
+
+        /// <summary>
+        /// Configure the given container with the registrations provided by the funqlet.
+        /// </summary>
+        /// <param name="container">Container to register.</param>
+        public override void Configure(Container container) {
+            Log.Info("Starting service...");
+
+            // Set up base configuration
+            var disableFeatures = Feature.Soap | Feature.Xml | Feature.Csv | Feature.Jsv;
+            SetConfig(new EndpointHostConfig {
+                EnableFeatures = Feature.All.Remove(disableFeatures),
+                //                DebugMode = false,
+                DefaultContentType = ContentType.Json
+            });
+
+            Log.Debug(EndpointHost.Config.GetCustomErrorHttpHandler(HttpStatusCode.NotFound).Dump());
+            // Set JSON services to return idiomatic JSON camelCase properties
+            JsConfig.EmitCamelCaseNames = true;
+
+            // Set up authentication service
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                                        new IAuthProvider[] { new MoshAppAuthProvider() }) {
+                                            ServiceRoutes = new Dictionary<Type, string[]> {
+                                                { typeof(AuthService), new[] { "/authenticate" } }
+                                            }
+                                        });
+
+            Log.Info("Service started!");
+            Log.Debug("Debug mode is {0}!".F(EndpointHost.Config.DebugMode ? "ON" : "OFF"));
+        }
+    }
+}
