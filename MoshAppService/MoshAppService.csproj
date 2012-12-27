@@ -117,8 +117,6 @@
     <Compile Include="Source\Service\Data\User.cs" />
     <Compile Include="Source\Service\Endpoints\UserService.cs" />
     <Compile Include="Source\Service\MoshAppServiceHost.cs" />
-    <Compile Include="Source\Service\Response\UnauthorizedResponse.cs" />
-    <Compile Include="Source\Service\Security\Authentication.cs" />
     <Compile Include="Source\Service\Security\MoshAppAuthProvider.cs" />
     <Compile Include="Source\Service\Security\PasswordHelper.cs" />
     <Compile Include="Source\Utils\ReflectionUtils.cs" />
