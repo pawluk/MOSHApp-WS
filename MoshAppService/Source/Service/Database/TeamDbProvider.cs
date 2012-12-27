@@ -61,7 +61,16 @@ namespace MoshAppService.Service.Database {
         }
 
         [PublicAPI]
-        public static IEnumerable<Team> GetTeam(User user) {
+        public static Team GetTeam(User user) {
+            try {
+                return Teams.Values.First(x => x.TeamMembers.Contains(user));
+            } catch (ArgumentNullException) {
+                return null;
+            }
+        }
+
+        [PublicAPI]
+        public static IEnumerable<Team> GetTeams(User user) {
             try {
                 return Teams.Values.ToList().FindAll(x => x.TeamMembers.Contains(user));
             } catch (ArgumentNullException) {

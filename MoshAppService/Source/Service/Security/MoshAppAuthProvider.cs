@@ -37,6 +37,8 @@ namespace MoshAppService.Service.Security {
             User user;
             if (!AuthenticateUser(userName, password, out user)) return false;
 
+            var team = TeamDbProvider.GetTeam(user);
+
             var session = authService.GetSession();
             // PopulateWith() is really great, but it replaces the default 
             // session ID with the user ID from the database, so save it here
@@ -47,7 +49,7 @@ namespace MoshAppService.Service.Security {
             // These roles will be used later to check what team the user is on, etc.
             session.Roles = new List<string> {
                 User.F(user.Id),
-                Team.F(-1)
+                Team.F(team.Id)
             };
 
             session.UserAuthName = userName;
