@@ -50,8 +50,7 @@ namespace MoshAppService.Service {
                 DefaultContentType = ContentType.Json
             });
 
-            Log.Debug(EndpointHost.Config.GetCustomErrorHttpHandler(HttpStatusCode.NotFound).Dump());
-            // Set JSON services to return idiomatic JSON camelCase properties
+            // Set JSON services to return "camelCase" rather than "CamelCase"
             JsConfig.EmitCamelCaseNames = true;
 
             // Set up authentication service
