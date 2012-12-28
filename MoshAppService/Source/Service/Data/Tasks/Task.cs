@@ -5,41 +5,65 @@
 
 using System;
 
+using JetBrains.Annotations;
+
+using ServiceStack.ServiceHost;
+
 namespace MoshAppService.Service.Data.Tasks {
-    public class Task : Entity {
+    [PublicAPI]
+    [Route("/tasks/{Id}")]
+    public class Task : Entity<Task> {
+        #region Properties
+
         public Campus Campus { get; set; }
         public Direction Direction { get; set; }
         public Question Question { get; set; }
         public Task Previous { get; set; }
-    }
 
-    public class Campus : Entity {
-        public string Name { get; set; }
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
+        #endregion
 
-        protected bool Equals(Campus other) {
-            return base.Equals(other) &&
-                   string.Equals(Name, other.Name) &&
-                   Latitude.Equals(other.Latitude) &&
-                   Longitude.Equals(other.Longitude);
+        #region Constructors
+
+        public Task()
+            : this(-1, new Campus(), new Direction(), new Question(), null) { }
+
+        public Task(long id, Campus c, Direction d, Question q, Task prev)
+            : base(id) {
+            Campus = c;
+            Direction = d;
+            Question = q;
+            Previous = prev;
         }
 
-        public override bool Equals(object obj) {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((Campus) obj);
+        public Task(Task other)
+            : this(other.Id,
+                   other.Campus,
+                   other.Direction,
+                   other.Question,
+                   other.Previous) { }
+
+        #endregion
+
+        #region Equality Members
+
+        internal override bool _Equals(Task other) {
+            return Equals(Campus, other.Campus) &&
+                   Equals(Direction, other.Direction) &&
+                   Equals(Question, other.Question) &&
+                   Equals(Previous, other.Previous);
         }
 
         public override int GetHashCode() {
             unchecked {
                 var hashCode = base.GetHashCode();
-                hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ Latitude.GetHashCode();
-                hashCode = (hashCode * 397) ^ Longitude.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Campus != null ? Campus.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Direction != null ? Direction.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Question != null ? Question.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Previous != null ? Previous.GetHashCode() : 0);
                 return hashCode;
             }
         }
+
+        #endregion
     }
 }

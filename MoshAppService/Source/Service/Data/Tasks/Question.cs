@@ -6,21 +6,37 @@
 using System;
 
 namespace MoshAppService.Service.Data.Tasks {
-    public class Question : Entity {
-        public string Type { get; set; }
+    public class Question : Entity<Question> {
+        #region Properties
+
+        public QuestionType Type { get; set; }
         public string CorrectAnswer { get; set; }
 
-        protected bool Equals(Question other) {
-            return base.Equals(other) &&
-                   string.Equals(Type, other.Type) &&
-                   string.Equals(CorrectAnswer, other.CorrectAnswer);
+        #endregion
+
+        #region Constructors
+
+        public Question()
+            : this(-1, QuestionType.Text, "") { }
+
+        public Question(long id, QuestionType type, string answer)
+            : base(id) {
+            Type = type;
+            CorrectAnswer = answer;
         }
 
-        public override bool Equals(object obj) {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((Question) obj);
+        public Question(Question other)
+            : this(other.Id,
+                   other.Type,
+                   other.CorrectAnswer) { }
+
+        #endregion
+
+        #region Equality Members
+
+        internal override bool _Equals(Question other) {
+            return Equals(Type, other.Type) &&
+                   string.Equals(CorrectAnswer, other.CorrectAnswer);
         }
 
         public override int GetHashCode() {
@@ -31,5 +47,13 @@ namespace MoshAppService.Service.Data.Tasks {
                 return hashCode;
             }
         }
+
+        #endregion
+    }
+
+    public enum QuestionType {
+        Text,
+        Sound,
+        Image
     }
 }

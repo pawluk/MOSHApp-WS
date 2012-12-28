@@ -7,16 +7,13 @@ using System;
 
 using JetBrains.Annotations;
 
-using MoshAppService.Service.Response;
-
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 
 namespace MoshAppService.Service.Data {
     [PublicAPI]
     [Route("/users/{Id}")]
-    public class User : Entity {
+    public class User : Entity<User> {
         #region Properties
 
         [UsedImplicitly]
@@ -60,28 +57,14 @@ namespace MoshAppService.Service.Data {
 
         #endregion
 
-        public override string ToString() {
-            return JsonSerializer.SerializeToString(this);
-        }
+        #region Equality Members
 
-        protected internal static User FromLoginUser(LoginUser u) {
-            return u == null ? null : new User().PopulateWith(u);
-        }
-
-        protected bool Equals(User other) {
-            return base.Equals(other) &&
-                   string.Equals(FirstName, other.FirstName) &&
+        internal override bool _Equals(User other) {
+            return string.Equals(FirstName, other.FirstName) &&
                    string.Equals(LastName, other.LastName) &&
                    string.Equals(Email, other.Email) &&
                    string.Equals(Phone, other.Phone) &&
                    string.Equals(StudentNumber, other.StudentNumber);
-        }
-
-        public override bool Equals(object obj) {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((User) obj);
         }
 
         public override int GetHashCode() {
@@ -95,9 +78,11 @@ namespace MoshAppService.Service.Data {
                 return hashCode;
             }
         }
-    }
 
-    public class UserResponse : ResponseBase {
-        public User User { get; set; }
+        #endregion
+
+        protected internal static User FromLoginUser(LoginUser u) {
+            return u == null ? null : new User().PopulateWith(u);
+        }
     }
 }

@@ -8,27 +8,49 @@ using System;
 using ServiceStack.ServiceHost;
 
 namespace MoshAppService.Service.Data.Tasks {
-    public class Direction : Entity {
+    public class Direction : Entity<Direction> {
+        #region Properties
+
         public string Text { get; set; }
         public IFile Audio { get; set; }
         public IFile Image { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
-        protected bool Equals(Direction other) {
-            return base.Equals(other) &&
-                   string.Equals(Text, other.Text) &&
+        #endregion
+
+        #region Constructors
+
+        public Direction()
+            : this(-1, "", null, null, 0.0, 0.0) { }
+
+        public Direction(long id, string text, IFile audio, IFile image, double lat, double lon)
+            : base(id) {
+            Text = text;
+            Audio = audio;
+            Image = image;
+            Latitude = lat;
+            Longitude = lon;
+        }
+
+        public Direction(Direction other)
+            : this(other.Id,
+                   other.Text,
+                   other.Audio,
+                   other.Image,
+                   other.Latitude,
+                   other.Longitude) { }
+
+        #endregion
+
+        #region Equality Members
+
+        internal override bool _Equals(Direction other) {
+            return string.Equals(Text, other.Text) &&
                    Equals(Audio, other.Audio) &&
                    Equals(Image, other.Image) &&
                    Latitude.Equals(other.Latitude) &&
                    Longitude.Equals(other.Longitude);
-        }
-
-        public override bool Equals(object obj) {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((Direction) obj);
         }
 
         public override int GetHashCode() {
@@ -42,5 +64,7 @@ namespace MoshAppService.Service.Data.Tasks {
                 return hashCode;
             }
         }
+
+        #endregion
     }
 }

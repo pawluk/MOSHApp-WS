@@ -9,12 +9,13 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 
 namespace MoshAppService.Service.Data {
     [PublicAPI]
     [Route("/teams/{Id}")]
-    public class Team : Entity {
+    public class Team : Entity<Team> {
+        #region Properties
+
         public string Name { get; set; }
         // Populated using the Team_User table
         public List<User> TeamMembers { get; set; }
@@ -23,21 +24,31 @@ namespace MoshAppService.Service.Data {
         //        public long ChatId { get; set; }
         //        public string ChatUuid { get; set; }
 
-        public override string ToString() {
-            return JsonSerializer.SerializeToString(this);
+        #endregion
+
+        #region Constructors
+
+        public Team()
+            : this(-1, "", new List<User>()) { }
+
+        public Team(long id, string name, List<User> members)
+            : base(id) {
+            Name = name;
+            TeamMembers = members;
         }
 
-        protected bool Equals(Team other) {
-            return base.Equals(other) &&
-                   string.Equals(Name, other.Name) &&
+        public Team(Team other)
+            : this(other.Id,
+                   other.Name,
+                   other.TeamMembers) { }
+
+        #endregion
+
+        #region Equality Members
+
+        internal override bool _Equals(Team other) {
+            return string.Equals(Name, other.Name) &&
                    Equals(TeamMembers, other.TeamMembers);
-        }
-
-        public override bool Equals(object obj) {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((Team) obj);
         }
 
         public override int GetHashCode() {
@@ -48,5 +59,7 @@ namespace MoshAppService.Service.Data {
                 return hashCode;
             }
         }
+
+        #endregion
     }
 }
