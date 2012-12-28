@@ -14,8 +14,7 @@ using ServiceStack.Text;
 namespace MoshAppService.Service.Data {
     [PublicAPI]
     [Route("/teams/{Id}")]
-    public class Team {
-        public long Id { get; set; }
+    public class Team : Entity {
         public string Name { get; set; }
         // Populated using the Team_User table
         public List<User> TeamMembers { get; set; }
@@ -29,7 +28,9 @@ namespace MoshAppService.Service.Data {
         }
 
         protected bool Equals(Team other) {
-            return Id == other.Id && string.Equals(Name, other.Name) && Equals(TeamMembers, other.TeamMembers);
+            return base.Equals(other) &&
+                   string.Equals(Name, other.Name) &&
+                   Equals(TeamMembers, other.TeamMembers);
         }
 
         public override bool Equals(object obj) {

@@ -15,6 +15,8 @@ using MoshAppService.Service.Security;
 namespace MoshAppService.Service.Database {
     [UsedImplicitly]
     public class LoginUserDbProvider : UserDbProvider {
+        #region Temporary in-memory "Database"
+
         private static readonly Dictionary<long, Tuple<string, string>> Passwords;
 
         static LoginUserDbProvider() {
@@ -30,6 +32,8 @@ namespace MoshAppService.Service.Database {
                 Passwords.Add(user.Id, new Tuple<string, string>(login, storedpass));
             }
         }
+
+        #endregion
 
         [CanBeNull]
         public static LoginUser GetUser([NotNull] string username) {

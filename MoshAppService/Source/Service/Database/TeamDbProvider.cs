@@ -72,7 +72,7 @@ namespace MoshAppService.Service.Database {
         [PublicAPI]
         public static IEnumerable<Team> GetTeams(User user) {
             try {
-                return Teams.Values.ToList().FindAll(x => x.TeamMembers.Contains(user));
+                return Teams.Values.Where(x => x.TeamMembers.Contains(user));
             } catch (ArgumentNullException) {
                 return null;
             }

@@ -3,6 +3,7 @@
 // 
 // Author: Jason Recillo
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -57,6 +58,11 @@ namespace MoshAppService.Service.Security {
 
             Log.Debug(session.Dump());
             return true;
+        }
+
+        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo) {
+            Log.Debug("OnAuthenticated:{0}{1}{0}{2}".F(Environment.NewLine, authService, session.Dump()));
+            base.OnAuthenticated(authService, session, tokens, authInfo);
         }
 
         private static bool AuthenticateUser(string username, string password, out User user) {

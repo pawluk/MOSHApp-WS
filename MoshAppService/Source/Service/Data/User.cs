@@ -3,6 +3,8 @@
 // 
 // Author: Jason Recillo
 
+using System;
+
 using JetBrains.Annotations;
 
 using MoshAppService.Service.Response;
@@ -14,11 +16,8 @@ using ServiceStack.Text;
 namespace MoshAppService.Service.Data {
     [PublicAPI]
     [Route("/users/{Id}")]
-    public class User {
+    public class User : Entity {
         #region Properties
-
-        [UsedImplicitly]
-        public long Id { get; set; }
 
         [UsedImplicitly]
         public string FirstName { get; set; }
@@ -70,7 +69,12 @@ namespace MoshAppService.Service.Data {
         }
 
         protected bool Equals(User other) {
-            return Id == other.Id && string.Equals(FirstName, other.FirstName) && string.Equals(LastName, other.LastName) && string.Equals(Email, other.Email) && string.Equals(Phone, other.Phone) && string.Equals(StudentNumber, other.StudentNumber);
+            return base.Equals(other) &&
+                   string.Equals(FirstName, other.FirstName) &&
+                   string.Equals(LastName, other.LastName) &&
+                   string.Equals(Email, other.Email) &&
+                   string.Equals(Phone, other.Phone) &&
+                   string.Equals(StudentNumber, other.StudentNumber);
         }
 
         public override bool Equals(object obj) {

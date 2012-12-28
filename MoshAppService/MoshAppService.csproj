@@ -107,10 +107,17 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Source\Service\Database\BaseDbProvider.cs" />
+    <Compile Include="Source\Service\Database\GameDbProvider.cs" />
     <Compile Include="Source\Service\Database\LoginUserDbProvider.cs" />
+    <Compile Include="Source\Service\Database\TaskDbProvider.cs" />
     <Compile Include="Source\Service\Database\TeamDbProvider.cs" />
     <Compile Include="Source\Service\Database\UserDbProvider.cs" />
+    <Compile Include="Source\Service\Data\Entity.cs" />
+    <Compile Include="Source\Service\Data\Game.cs" />
     <Compile Include="Source\Service\Data\LoginUser.cs" />
+    <Compile Include="Source\Service\Data\Tasks\Direction.cs" />
+    <Compile Include="Source\Service\Data\Tasks\Question.cs" />
+    <Compile Include="Source\Service\Data\Tasks\Task.cs" />
     <Compile Include="Source\Service\Endpoints\MoshAppServiceBase.cs" />
     <Compile Include="Source\Service\Response\ResponseBase.cs" />
     <Compile Include="Source\Service\Data\Team.cs" />
