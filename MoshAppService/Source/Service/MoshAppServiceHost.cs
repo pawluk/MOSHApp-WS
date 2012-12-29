@@ -32,7 +32,7 @@ namespace MoshAppService.Service {
         }
 
         public MoshAppServiceHost()
-            : base("MOSHApp", typeof(MoshAppServiceHost).Assembly) { }
+            : base("Mobile Orientation Scavenger Hunt - Web Service", typeof(MoshAppServiceHost).Assembly) { }
 
         /// <summary>
         /// Configure the given container with the registrations provided by the funqlet.
@@ -56,12 +56,15 @@ namespace MoshAppService.Service {
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                                         new IAuthProvider[] { new MoshAppAuthProvider() }) {
                                             ServiceRoutes = new Dictionary<Type, string[]> {
-                                                { typeof(AuthService), new[] { "/authenticate" } }
-                                            }
+                                                { typeof(AuthService), new[] { "/authenticate" } },
+                                            },
+                                            HtmlRedirect = null,
+                                            IncludeAssignRoleServices = false
                                         });
 
+            Log.Debug(Config.Metadata.Dump());
             Log.Info("Service started!");
-            Log.Debug("Debug mode is {0}!".F(EndpointHost.Config.DebugMode ? "ON" : "OFF"));
+            Log.Debug("Debug mode is {0}!".F(Config.DebugMode ? "ON" : "OFF"));
         }
     }
 }
