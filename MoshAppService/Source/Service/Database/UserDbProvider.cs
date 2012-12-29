@@ -6,12 +6,20 @@
 using System;
 using System.Collections.Generic;
 
-using JetBrains.Annotations;
-
 using MoshAppService.Service.Data;
 
+using ServiceStack.OrmLite;
+
 namespace MoshAppService.Service.Database {
-    public class UserDbProvider : BaseDbProvider {
+    public class UserDbProvider : BaseDbProvider<User> {
+        #region Lazy-Initialized Singleton
+
+        private static readonly Lazy<UserDbProvider> _instance = new Lazy<UserDbProvider>(() => new UserDbProvider());
+        public static UserDbProvider Instance { get { return _instance.Value; } }
+        internal UserDbProvider() { }
+
+        #endregion
+
         #region Temporary in-memory "Database" (소녀시대) :D
 
         internal static readonly Dictionary<long, User> Users = new Dictionary<long, User> {
@@ -101,12 +109,25 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
-        [PublicAPI, CanBeNull]
-        public static User GetUser(long id) {
-            try {
-                return Users[id];
-            } catch (InvalidOperationException) {
-                return null;
+        //        public User this[long id] {{}
+        //            try {
+        //                return Users[id];
+        //            } catch (InvalidOperationException) {
+        //                return null;
+        //            }
+        //        }
+        protected override void InitializeDb() {
+            using (var db = DbFactory.OpenDbConnection()) {
+                db.DropTable<User>();
+                db.CreateTable<User>();
+                foreach (var user in Users.Values) db.Insert(user);
+            }
+        }
+
+        public override User this[long id] {
+            get {
+                using (var db = DbFactory.OpenDbConnection())
+                    return db.GetById<User>(id);
             }
         }
     }

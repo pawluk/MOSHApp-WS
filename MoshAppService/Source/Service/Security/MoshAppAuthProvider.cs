@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 
 using MoshAppService.Service.Data;
@@ -38,7 +39,7 @@ namespace MoshAppService.Service.Security {
             User user;
             if (!AuthenticateUser(userName, password, out user)) return false;
 
-            var team = TeamDbProvider.GetTeam(user);
+            var team = TeamDbProvider.Instance[user];
 
             var session = authService.GetSession();
             // PopulateWith() is really great, but it replaces the default 
@@ -56,7 +57,6 @@ namespace MoshAppService.Service.Security {
             session.UserAuthName = userName;
             session.UserAuthId = user.Id.ToString(CultureInfo.InvariantCulture);
 
-            Log.Debug(session.Dump());
             return true;
         }
 
@@ -67,7 +67,7 @@ namespace MoshAppService.Service.Security {
 
         private static bool AuthenticateUser(string username, string password, out User user) {
             // Here, we would check the database and authenticate with the given credentials
-            var login = LoginUserDbProvider.GetUser(username);
+            var login = LoginUserDbProvider.Instance[username];
 
             // If user is null, the user doesn't exist in the database, so return false
             // Also, check the given password against the password retrieved from the database

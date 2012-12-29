@@ -15,6 +15,14 @@ using MoshAppService.Service.Security;
 namespace MoshAppService.Service.Database {
     [UsedImplicitly]
     public class LoginUserDbProvider : UserDbProvider {
+        #region Lazy-Initialized Singleton
+
+        private static readonly Lazy<LoginUserDbProvider> _instance = new Lazy<LoginUserDbProvider>(() => new LoginUserDbProvider());
+        public new static LoginUserDbProvider Instance { get { return _instance.Value; } }
+        private LoginUserDbProvider() { }
+
+        #endregion
+
         #region Temporary in-memory "Database"
 
         private static readonly Dictionary<long, Tuple<string, string>> Passwords;
@@ -35,22 +43,27 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
-        [CanBeNull]
-        public static LoginUser GetUser([NotNull] string username) {
-            if (username == null) throw new ArgumentNullException("username");
+        protected override void InitializeDb() { }
 
-            try {
-                var userpass = Passwords.First(x => x.Value.Item1 == username);
-                var uid = userpass.Key;
-                var user = GetUser(uid);
-                if (user == null) return null;
+        public LoginUser this[string username] {
+            get {
+                if (username == null) throw new ArgumentNullException("username");
 
-                var loginUser = new LoginUser(user) {
-                    Password = userpass.Value.Item2
-                };
-                return loginUser;
-            } catch (InvalidOperationException) {
-                return null;
+                using (var db = DbFactory.OpenDbConnection()) {
+                    try {
+                        var userpass = Passwords.First(x => x.Value.Item1 == username);
+                        var uid = userpass.Key;
+                        var user = this[uid];
+                        if (user == null) return null;
+
+                        var loginUser = new LoginUser(user) {
+                            Password = userpass.Value.Item2
+                        };
+                        return loginUser;
+                    } catch (InvalidOperationException) {
+                        return null;
+                    }
+                }
             }
         }
     }

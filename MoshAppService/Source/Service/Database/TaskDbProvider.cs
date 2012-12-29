@@ -9,7 +9,14 @@ using System.Collections.Generic;
 using MoshAppService.Service.Data.Tasks;
 
 namespace MoshAppService.Service.Database {
-    public class TaskDbProvider : BaseDbProvider {
+    public class TaskDbProvider : BaseDbProvider<Task> {
+        #region Lazy-Initialized Singleton
+
+        private static readonly Lazy<TaskDbProvider> _instance = new Lazy<TaskDbProvider>(() => new TaskDbProvider());
+        public static TaskDbProvider Instance { get { return _instance.Value; } }
+        private TaskDbProvider() { }
+
+        #endregion
         #region Temporary in-memory "Database"
 
         internal static readonly Dictionary<long, Task> Tasks = new Dictionary<long, Task> {
@@ -31,7 +38,7 @@ namespace MoshAppService.Service.Database {
                     Question = new Question {
                         Id = 0,
                         CorrectAnswer = "A thing",
-                        Type = "ShortAnswer"
+                        Type = QuestionType.Text
                     },
                     Previous = null
                 }
@@ -53,7 +60,7 @@ namespace MoshAppService.Service.Database {
                     Question = new Question {
                         Id = 1,
                         CorrectAnswer = "A thing",
-                        Type = "ShortAnswer"
+                        Type = QuestionType.Text
                     },
                     Previous = null
                 }
@@ -61,6 +68,12 @@ namespace MoshAppService.Service.Database {
         };
 
         #endregion
+
+        protected override void InitializeDb() {
+            throw new NotImplementedException();
+        }
+
+        public override Task this[long id] { get { throw new NotImplementedException(); } }
 
         public static Task GetTask(long id) {
             try {
