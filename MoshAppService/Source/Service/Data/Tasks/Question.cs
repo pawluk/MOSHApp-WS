@@ -42,7 +42,7 @@ namespace MoshAppService.Service.Data.Tasks {
         public override int GetHashCode() {
             unchecked {
                 var hashCode = base.GetHashCode();
-                hashCode = (hashCode * 397) ^ (Type != null ? Type.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Type.GetHashCode());
                 hashCode = (hashCode * 397) ^ (CorrectAnswer != null ? CorrectAnswer.GetHashCode() : 0);
                 return hashCode;
             }

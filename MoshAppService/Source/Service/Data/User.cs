@@ -12,7 +12,8 @@ using ServiceStack.ServiceHost;
 
 namespace MoshAppService.Service.Data {
     [PublicAPI]
-    [Route("/users/{Id}")]
+    [Route("/users")]
+    [Route("/users/{Id}", "GET")]
     public class User : Entity<User> {
         #region Properties
 

@@ -11,8 +11,8 @@ using MoshAppService.Service.Data;
 using MoshAppService.Service.Database;
 
 using ServiceStack.Logging;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 
 namespace MoshAppService.Service.Endpoints {
@@ -25,21 +25,13 @@ namespace MoshAppService.Service.Endpoints {
             if (!IsLoggedIn) return UnauthorizedResponse();
 
             // Only allow the user to see their own profile or the profile of anyone on their team
-            var team = TeamDbProvider.GetTeam(TeamId);
+            var team = TeamDbProvider.Instance[TeamId];
             if (team != null && team.TeamMembers.Find(x => x.Id == request.Id) == null) return UnauthorizedResponse();
-            return UserDbProvider.GetUser(request.Id);
-        }
 
-        private static long GetUserId(IAuthSession session) {
-            return GetId(session, "User");
-        }
-
-        private static long GetTeamId(IAuthSession session) {
-            return GetId(session, "Team");
-        }
-
-        private static long GetId(IAuthSession session, string type) {
-            return long.Parse(session.Roles.Find(x => x.Contains(type)).Substring(type.Length + 1));
+            return RequestContext.ToOptimizedResultUsingCache(Cache,
+                                                              Session.Id + request.Id,
+                                                              () => UserDbProvider.Instance[request.Id]);
+            //            return UserDbProvider.Instance[request.Id];
         }
     }
 }

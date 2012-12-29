@@ -14,7 +14,8 @@ using ServiceStack.ServiceHost;
 
 namespace MoshAppService.Service.Data {
     [PublicAPI]
-    [Route("/games/{Id}")]
+    [Route("/games")]
+    [Route("/games/{Id}", "GET")]
     public class Game : Entity<Game> {
         #region Properties
 
@@ -22,6 +23,24 @@ namespace MoshAppService.Service.Data {
         public DateTime Start { get; set; }
         public DateTime Finish { get; set; }
         public IEnumerable<Task> Tasks { get; set; }
+
+        #region DateTime Strings
+
+        // Date strings to aid in parsing DateTime objects in other languages
+        // Will output in ISO 8601 format
+        // i.e., 2012-12-21T10:00:00.0000000-05:00 which is December 21, 2012, 10:00 AM EST
+
+        /// <summary>
+        /// Returns a representation of the start time in ISO 8601 date format.
+        /// </summary>
+        public string StartDateString { get { return Start.ToUniversalTime().ToString("o"); } }
+
+        /// <summary>
+        /// Returns a representation of the finish time in ISO 8601 date format.
+        /// </summary>
+        public string FinishDateString { get { return Finish.ToUniversalTime().ToString("o"); } }
+
+        #endregion
 
         #endregion
 

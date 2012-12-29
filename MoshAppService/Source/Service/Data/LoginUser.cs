@@ -12,10 +12,16 @@ namespace MoshAppService.Service.Data {
         [NotNull]
         public string Password { get; set; }
 
-        public LoginUser(User user)
+        public LoginUser()
+            : this(new User(), "") { }
+
+        public LoginUser(User user, string pass)
             : base(user) {
-            Password = "";
+            Password = pass;
         }
+
+        public LoginUser(User user)
+            : this(user, "") { }
 
         public override string ToString() {
             // Strip "Password" field from output by representing this
