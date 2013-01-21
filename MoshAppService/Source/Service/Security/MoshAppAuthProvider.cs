@@ -29,6 +29,7 @@ namespace MoshAppService.Service.Security {
          */
         private const string User = "User {0}";
         private const string Team = "Team {0}";
+        private const string Game = "Game {0}";
 
         #endregion
 
@@ -40,6 +41,7 @@ namespace MoshAppService.Service.Security {
             if (!AuthenticateUser(userName, password, out user)) return false;
 
             var team = TeamDbProvider.Instance[user];
+            var game = GameDbProvider.Instance[team];
 
             var session = authService.GetSession();
             // PopulateWith() is really great, but it replaces the default 
@@ -51,7 +53,8 @@ namespace MoshAppService.Service.Security {
             // These roles will be used later to check what team the user is on, etc.
             session.Roles = new List<string> {
                 User.F(user.Id),
-                Team.F(team.Id)
+                Team.F(team.Id),
+                Game.F(game.Id)
             };
 
             session.UserAuthName = userName;

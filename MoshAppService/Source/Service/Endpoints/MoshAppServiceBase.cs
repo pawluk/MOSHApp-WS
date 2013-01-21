@@ -43,8 +43,16 @@ namespace MoshAppService.Service.Endpoints {
         /// </summary>
         public long TeamId { get { return long.Parse(Session.Roles.Find(x => x.Contains("Team")).Substring("Team ".Length)); } }
 
+        /// <summary>
+        /// Returns the game ID of the game that the current user is participating in.
+        /// </summary>
+        public long GameId { get { return long.Parse(Session.Roles.Find(x => x.Contains("Game")).Substring("Game ".Length)); } }
+
         protected HttpError UnauthorizedResponse(string errorCode = null) {
             return new HttpError(HttpStatusCode.Unauthorized, errorCode);
+        }
+        protected HttpError BadRequestResponse(string errorCode = null) {
+            return new HttpError(HttpStatusCode.BadRequest, errorCode);
         }
     }
 }
