@@ -117,17 +117,22 @@ namespace MoshAppService.Service.Database {
         //            }
         //        }
         protected override void InitializeDb() {
-            using (var db = DbFactory.OpenDbConnection()) {
-                db.DropTable<User>();
-                db.CreateTable<User>();
-                foreach (var user in Users.Values) db.Insert(user);
-            }
+            //            using (var db = DbFactory.OpenDbConnection()) {
+            //                db.DropTable<User>();
+            //                db.CreateTable<User>();
+            //                foreach (var user in Users.Values) db.Insert(user);
+            //            }
         }
 
         public override User this[long id] {
             get {
-                using (var db = DbFactory.OpenDbConnection())
-                    return db.GetById<User>(id);
+                try {
+                    return Users[id];
+                } catch (ArgumentException) {
+                    return null;
+                }
+                //                using (var db = DbFactory.OpenDbConnection())
+                //                    return db.GetById<User>(id);
             }
         }
     }

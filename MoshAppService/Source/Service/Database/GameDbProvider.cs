@@ -5,11 +5,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using MoshAppService.Service.Data;
 using MoshAppService.Service.Data.Tasks;
-
-using ServiceStack.OrmLite;
 
 namespace MoshAppService.Service.Database {
     public class GameDbProvider : BaseDbProvider<Game> {
@@ -29,8 +28,8 @@ namespace MoshAppService.Service.Database {
                     Id = 0,
                     Team = TeamDbProvider.Instance[0],
                     Tasks = new HashSet<Task> {
-                        TaskDbProvider.GetTask(0),
-                        TaskDbProvider.GetTask(1)
+                        TaskDbProvider.Instance[0],
+                        TaskDbProvider.Instance[1]
                     },
                     Start = new DateTime(2012, 12, 21, 10, 0, 0, DateTimeKind.Local),
                     Finish = new DateTime(2012, 12, 22, 12, 0, 0, DateTimeKind.Local)
@@ -40,8 +39,8 @@ namespace MoshAppService.Service.Database {
                     Id = 1,
                     Team = TeamDbProvider.Instance[1],
                     Tasks = new HashSet<Task> {
-                        TaskDbProvider.GetTask(1),
-                        TaskDbProvider.GetTask(0)
+                        TaskDbProvider.Instance[1],
+                        TaskDbProvider.Instance[0]
                     },
                     Start = new DateTime(2012, 12, 21, 10, 0, 0, DateTimeKind.Local),
                     Finish = new DateTime(2012, 12, 22, 10, 0, 0, DateTimeKind.Local)
@@ -52,10 +51,10 @@ namespace MoshAppService.Service.Database {
         #endregion
 
         protected override void InitializeDb() {
-            using (var db = DbFactory.OpenDbConnection()) {
-                db.CreateTable<Game>(true);
-                foreach (var game in Games.Values) db.Insert(game);
-            }
+            //            using (var db = DbFactory.OpenDbConnection()) {
+            //                db.CreateTable<Game>(true);
+            //                foreach (var game in Games.Values) db.Insert(game);
+            //            }
         }
 
         public override Game this[long id] {
@@ -65,6 +64,13 @@ namespace MoshAppService.Service.Database {
                 } catch (InvalidOperationException) {
                     return null;
                 }
+            }
+        }
+
+        public Game this[Team team] {
+            get {
+                //
+                return Games.ToList().Find(game => game.Value.Team.Equals(team)).Value;
             }
         }
     }

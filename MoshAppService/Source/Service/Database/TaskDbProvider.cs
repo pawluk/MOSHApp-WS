@@ -17,6 +17,7 @@ namespace MoshAppService.Service.Database {
         private TaskDbProvider() { }
 
         #endregion
+
         #region Temporary in-memory "Database"
 
         internal static readonly Dictionary<long, Task> Tasks = new Dictionary<long, Task> {
@@ -70,17 +71,25 @@ namespace MoshAppService.Service.Database {
         #endregion
 
         protected override void InitializeDb() {
-            throw new NotImplementedException();
+            
         }
 
-        public override Task this[long id] { get { throw new NotImplementedException(); } }
-
-        public static Task GetTask(long id) {
-            try {
-                return Tasks[id];
-            } catch (InvalidOperationException) {
-                return null;
+        public override Task this[long id] {
+            get {
+                try {
+                    return Tasks[id];
+                } catch (InvalidOperationException) {
+                    return null;
+                }
             }
         }
+
+//        public static Task GetTask(long id) {
+//            try {
+//                return Tasks[id];
+//            } catch (InvalidOperationException) {
+//                return null;
+//            }
+//        }
     }
 }

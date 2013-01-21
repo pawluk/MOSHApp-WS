@@ -49,7 +49,7 @@ namespace MoshAppService.Service.Database {
             get {
                 if (username == null) throw new ArgumentNullException("username");
 
-                using (var db = DbFactory.OpenDbConnection()) {
+//                using (var db = DbFactory.OpenDbConnection()) {
                     try {
                         var userpass = Passwords.First(x => x.Value.Item1 == username);
                         var uid = userpass.Key;
@@ -63,7 +63,7 @@ namespace MoshAppService.Service.Database {
                     } catch (InvalidOperationException) {
                         return null;
                     }
-                }
+//                }
             }
         }
     }

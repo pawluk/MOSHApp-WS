@@ -74,33 +74,39 @@ namespace MoshAppService.Service.Database {
         }
 
         protected override void InitializeDb() {
-            using (var db = DbFactory.OpenDbConnection()) {
-                db.DropTable<Team>();
-                db.CreateTable<Team>();
-                foreach (var team in Teams.Values) db.Insert(team);
-            }
+//            using (var db = DbFactory.OpenDbConnection()) {
+//                db.DropTable<Team>();
+//                db.CreateTable<Team>();
+//                foreach (var team in Teams.Values) db.Insert(team);
+//            }
         }
 
         public override Team this[long id] {
             get {
                 try {
-                    using (var db = DbFactory.OpenDbConnection()) return db.GetById<Team>(id);
-                } catch (InvalidOperationException) {
+                    return Teams[id];
+                } catch (ArgumentException) {
                     return null;
                 }
+                //                try {
+                //                    using (var db = DbFactory.OpenDbConnection()) return db.GetById<Team>(id);
+                //                } catch (InvalidOperationException) {
+                //                    return null;
+                //                }
             }
         }
 
         public Team this[User user] {
             get {
-                try {
-                    using (var db = DbFactory.OpenDbConnection())
-                        return db.Select<Team>().Find(x => x.TeamMembers.Contains(user));
-                } catch (ArgumentNullException) {
-                    return null;
-                } catch (InvalidOperationException) {
-                    return null;
-                }
+                return Teams.ToList().Find(team => team.Value.TeamMembers.Contains(user)).Value;
+                //                try {
+                //                    using (var db = DbFactory.OpenDbConnection())
+                //                        return db.Select<Team>().Find(x => x.TeamMembers.Contains(user));
+                //                } catch (ArgumentNullException) {
+                //                    return null;
+                //                } catch (InvalidOperationException) {
+                //                    return null;
+                //                }
             }
         }
     }
