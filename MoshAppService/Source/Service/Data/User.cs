@@ -32,6 +32,9 @@ namespace MoshAppService.Service.Data {
         [UsedImplicitly]
         public string StudentNumber { get; set; }
 
+        [UsedImplicitly]
+        public string Nickname { get; set; }
+
         #endregion
 
         #region Constructors
