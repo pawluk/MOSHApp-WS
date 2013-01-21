@@ -26,6 +26,7 @@ namespace MoshAppService.Service.Database {
             {
                 0, new User {
                     Id = 0,
+                    Nickname = "byuntaeng",
                     FirstName = "Taeyeon",
                     LastName = "Kim",
                     Email = "example01@example.com",
@@ -35,6 +36,7 @@ namespace MoshAppService.Service.Database {
             }, {
                 1, new User {
                     Id = 1,
+                    Nickname = "fany",
                     FirstName = "Tiffany",
                     LastName = "Hwang",
                     Email = "example02@example.com",
@@ -44,6 +46,7 @@ namespace MoshAppService.Service.Database {
             }, {
                 2, new User {
                     Id = 2,
+                    Nickname = "sunny",
                     FirstName = "Soonkyu",
                     LastName = "Lee",
                     Email = "example03@example.com",
@@ -53,6 +56,7 @@ namespace MoshAppService.Service.Database {
             }, {
                 3, new User {
                     Id = 3,
+                    Nickname = "sica",
                     FirstName = "Sooyeon",
                     LastName = "Jung",
                     Email = "example04@example.com",
@@ -62,6 +66,7 @@ namespace MoshAppService.Service.Database {
             }, {
                 4, new User {
                     Id = 4,
+                    Nickname = "seororo",
                     FirstName = "Joohyun",
                     LastName = "Seo",
                     Email = "example05@example.com",
@@ -71,6 +76,7 @@ namespace MoshAppService.Service.Database {
             }, {
                 5, new User {
                     Id = 5,
+                    Nickname = "syoung",
                     FirstName = "Sooyoung",
                     LastName = "Choi",
                     Email = "example06@example.com",
@@ -80,6 +86,7 @@ namespace MoshAppService.Service.Database {
             }, {
                 6, new User {
                     Id = 6,
+                    Nickname = "kwonyul",
                     FirstName = "Yuri",
                     LastName = "Kwon",
                     Email = "example07@example.com",
@@ -89,6 +96,7 @@ namespace MoshAppService.Service.Database {
             }, {
                 7, new User {
                     Id = 7,
+                    Nickname = "hyoraengi",
                     FirstName = "Hyoyeon",
                     LastName = "Kim",
                     Email = "example08@example.com",
@@ -98,6 +106,7 @@ namespace MoshAppService.Service.Database {
             }, {
                 8, new User {
                     Id = 8,
+                    Nickname = "yoong",
                     FirstName = "Yoona",
                     LastName = "Im",
                     Email = "example09@example.com",

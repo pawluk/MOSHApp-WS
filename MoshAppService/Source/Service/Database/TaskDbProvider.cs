@@ -25,7 +25,7 @@ namespace MoshAppService.Service.Database {
                 0, new Task {
                     Id = 0,
                     Campus = new Campus {
-                        Id = 0,
+                        Id = 2,
                         Name = "Casa Loma",
                         Latitude = 43.676187,
                         Longitude = -79.410076
@@ -47,7 +47,7 @@ namespace MoshAppService.Service.Database {
                 1, new Task {
                     Id = 1,
                     Campus = new Campus {
-                        Id = 0,
+                        Id = 2,
                         Name = "Casa Loma",
                         Latitude = 43.676187,
                         Longitude = -79.410076
@@ -71,7 +71,7 @@ namespace MoshAppService.Service.Database {
         #endregion
 
         protected override void InitializeDb() {
-            
+
         }
 
         public override Task this[long id] {
@@ -84,12 +84,12 @@ namespace MoshAppService.Service.Database {
             }
         }
 
-//        public static Task GetTask(long id) {
-//            try {
-//                return Tasks[id];
-//            } catch (InvalidOperationException) {
-//                return null;
-//            }
-//        }
+        //        public static Task GetTask(long id) {
+        //            try {
+        //                return Tasks[id];
+        //            } catch (InvalidOperationException) {
+        //                return null;
+        //            }
+        //        }
     }
 }
