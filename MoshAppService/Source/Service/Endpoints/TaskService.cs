@@ -10,6 +10,7 @@ using JetBrains.Annotations;
 using MoshAppService.Service.Data.Tasks;
 using MoshAppService.Service.Database;
 
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 
 namespace MoshAppService.Service.Endpoints {
@@ -18,10 +19,12 @@ namespace MoshAppService.Service.Endpoints {
         // Users can access individual tasks at /tasks/{id} as long as they have been assigned that task
         [PublicAPI, Authenticate]
         public object Get(Task request) {
-            if (!IsLoggedIn) return UnauthorizedResponse();
+            if (request.Id == -1 || !IsLoggedIn) return UnauthorizedResponse();
             // Only allow the user to see tasks with which they have been assigned
 
-            return TaskDbProvider.GetTask(request.Id);
+            return RequestContext.ToOptimizedResultUsingCache(Cache,
+                                                              "Task" + Session.Id + request.Id,
+                                                              () => TaskDbProvider.Instance[request.Id]);
         }
     }
 }

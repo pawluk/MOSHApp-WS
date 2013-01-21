@@ -22,16 +22,15 @@ namespace MoshAppService.Service.Endpoints {
 
         public object Get(User request) {
             Log.Debug(Session.Dump());
-            if (!IsLoggedIn) return UnauthorizedResponse();
+            if (request.Id == -1 || !IsLoggedIn) return UnauthorizedResponse();
 
             // Only allow the user to see their own profile or the profile of anyone on their team
             var team = TeamDbProvider.Instance[TeamId];
             if (team != null && team.TeamMembers.Find(x => x.Id == request.Id) == null) return UnauthorizedResponse();
 
             return RequestContext.ToOptimizedResultUsingCache(Cache,
-                                                              Session.Id + request.Id,
+                                                              "User" + Session.Id + request.Id,
                                                               () => UserDbProvider.Instance[request.Id]);
-            //            return UserDbProvider.Instance[request.Id];
         }
     }
 }

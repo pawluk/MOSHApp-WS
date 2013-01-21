@@ -22,7 +22,10 @@ namespace MoshAppService.Service.Endpoints {
         [PublicAPI]
         public object Get(Game request) {
             if (request.Id == -1 || !IsLoggedIn) return UnauthorizedResponse();
-            return GameDbProvider.Instance[request.Id];
+
+            return RequestContext.ToOptimizedResultUsingCache(Cache,
+                                                              "Game" + Session.Id + request.Id,
+                                                              () => GameDbProvider.Instance[request.Id]);
         }
 
         // Users check in at <service_url>/games/{gameId}/checkin,
@@ -30,8 +33,8 @@ namespace MoshAppService.Service.Endpoints {
         // either application/json or application/x-www-form-urlencoded format
         [PublicAPI]
         public object Post(CheckIn request) {
-            Log.Debug("/games/{2}/checkin:{0}{1}".F(Environment.NewLine, request.Dump(), request.GameId));
-            return null;
+            Log.Debug("/games/{1}/checkin:{0}{2}".F(Environment.NewLine, request.GameId, request.Dump()));
+            return OkResponse();
         }
     }
 }

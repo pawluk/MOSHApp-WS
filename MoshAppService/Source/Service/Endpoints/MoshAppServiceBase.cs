@@ -54,5 +54,8 @@ namespace MoshAppService.Service.Endpoints {
         protected HttpError BadRequestResponse(string errorCode = null) {
             return new HttpError(HttpStatusCode.BadRequest, errorCode);
         }
+        protected HttpResult OkResponse() {
+            return new HttpResult(null, HttpStatusCode.OK);
+        }
     }
 }
