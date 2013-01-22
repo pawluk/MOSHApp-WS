@@ -3,6 +3,8 @@
 // 
 // Author: Jason Recillo
 
+using System;
+
 using JetBrains.Annotations;
 
 using ServiceStack.ServiceHost;

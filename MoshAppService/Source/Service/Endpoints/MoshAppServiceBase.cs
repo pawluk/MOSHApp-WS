@@ -51,9 +51,11 @@ namespace MoshAppService.Service.Endpoints {
         protected HttpError UnauthorizedResponse(string errorCode = null) {
             return new HttpError(HttpStatusCode.Unauthorized, errorCode);
         }
+
         protected HttpError BadRequestResponse(string errorCode = null) {
             return new HttpError(HttpStatusCode.BadRequest, errorCode);
         }
+
         protected HttpResult OkResponse() {
             return new HttpResult(null, HttpStatusCode.OK);
         }
