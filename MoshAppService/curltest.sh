@@ -60,8 +60,11 @@ GET="-X GET"
 PUT="-X PUT"
 DELETE="-X DELETE"
 
-USER_JSON='-d {"userName":"tkim","password":"123456"}'
-USER_FORM='-d userName=tkim -d password=123456'
+TESTUSER=tkim
+TESTPASS=123456
+
+USER_JSON="-d {\"userName\":\"$TESTUSER\",\"password\":\"$TESTPASS\"}"
+USER_FORM="-d userName=$TESTUSER -d password=$TESTPASS"
 
 if [ $RUNTEST -eq 1 ]; then
   # Login with JSON
@@ -91,35 +94,54 @@ if [ $? -ne 0 ] || [ $sessionId == "errorCode" ] || [ $sessionId == "" ]; then
  die "Error logging in."
 fi
 
-write "Session ID is "$sessionId""
+write "Logged in successfully!\nSession ID is $sessionId"
+entertocontinue
 
 CURL=curl
 AUTH="-b ss-id=$sessionId"
 
-write "Retrieve user information: $HOST/users/0"
-$CURL $GET $HOST/users/0 $AUTH
+function do_command {
+  message="$1"
+  host="$HOST$2"
+  method="$3"
+  verbose="$4"
 
-entertocontinue
+  if [[ ! -z "$5" ]]; then
+    data="-d '$5'"
+  else
+    data=""
+  fi
 
-write "Retrieve team information: $HOST/teams/0"
-$CURL $GET $HOST/teams/0 $AUTH
+  msg="$message\n\nURL: $host\nSession ID: $sessionId"
 
-entertocontinue
+  if [[ ! -z "$data" ]]; then
+    msg="$msg\nData: $5"
+  fi
 
-write "Retrieve team member information: $HOST/users/1"
-$CURL $GET $HOST/users/1 $AUTH
+  write "$msg"
 
-entertocontinue
+  sleep 0.1
 
-write "Try to retrieve information for user not in team: $HOST/users/5"
-$CURL -v $GET $HOST/users/5 $AUTH
+  if [[ $verbose == true ]]; then
+    # Filter out X-MiniProfiler-Ids header if it exists, as it
+    # isn't really needed here and it clutters up the screen :p
+    $CURL -v -X $method $host $AUTH $data 2>&1 | grep -v "X-MiniProfiler-Ids"
+  else
+    $CURL -X $method $host $AUTH $data
+  fi
 
-entertocontinue
+  prompt
+}
 
-write "Retrieve game information: $HOST/games/0"
-$CURL $GET $HOST/games/0 $AUTH
-
-entertocontinue
-
-write "Retrieve task information: $HOST/tasks/0"
-$CURL $GET $HOST/tasks/0 $AUTH
+do_command "Retrieve user information" "/users/0" "GET"
+do_command "Retrieve team information" "/teams/0" "GET"
+do_command "Retrieve team member information" "/users/1" "GET"
+do_command "Try to retrieve information for user not in team" "/users/5" "GET" true
+clear
+do_command "Retrieve game information" "/games/0" "GET"
+do_command "Retrieve task information" "/tasks/0" "GET"
+clear
+do_command "Check leaderboard (which will cache it; check the debug output)" "/leaderboard" "GET"
+do_command "Check leaderboard again (which should not regenerate it)" "/leaderboard" "GET"
+do_command "Check in to checkpoint" "/json/oneway/CheckIn" "POST" false '{"gameId":0,"taskId":0,"answer":"String"}'
+do_command "Check leaderboard (which should have been invalidated by checkin)" "/leaderboard" "GET"
