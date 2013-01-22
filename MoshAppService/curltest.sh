@@ -87,8 +87,8 @@ write "Now logging in and using the returned session ID for the other features..
 # Now that we know that we can login, let's use the session ID it gives us to test the other features
 sessionId=$(curl $POST $HOST/authenticate $USER_JSON -H "$JSON_HEADER" | awk -F '"' '{print $4}')
 
-if [ $sessionId == "errorCode" ]; then
-  die "Error logging in."
+if [ $? -ne 0 ] || [ $sessionId == "errorCode" ] || [ $sessionId == "" ]; then
+ die "Error logging in."
 fi
 
 write "Session ID is "$sessionId""
