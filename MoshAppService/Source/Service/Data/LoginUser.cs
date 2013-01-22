@@ -10,18 +10,18 @@ using JetBrains.Annotations;
 namespace MoshAppService.Service.Data {
     public class LoginUser : User {
         [NotNull]
+        public string LoginName { get; set; }
+
+        [NotNull]
         public string Password { get; set; }
 
         public LoginUser()
-            : this(new User(), "") { }
+            : this(new User()) { }
 
-        public LoginUser(User user, string pass)
+        public LoginUser(User user, string pass = "")
             : base(user) {
             Password = pass;
         }
-
-        public LoginUser(User user)
-            : this(user, "") { }
 
         public override string ToString() {
             // Strip "Password" field from output by representing this

@@ -15,8 +15,8 @@ namespace MoshAppService.Service.Database {
         #region Lazy-Initialized Singleton
 
         private static readonly Lazy<GameDbProvider> _instance = new Lazy<GameDbProvider>(() => new GameDbProvider());
-        public static GameDbProvider Instance { get { return _instance.Value; } }
         private GameDbProvider() { }
+        public static GameDbProvider Instance { get { return _instance.Value; } }
 
         #endregion
 
@@ -50,13 +50,6 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
-        protected override void InitializeDb() {
-            //            using (var db = DbFactory.OpenDbConnection()) {
-            //                db.CreateTable<Game>(true);
-            //                foreach (var game in Games.Values) db.Insert(game);
-            //            }
-        }
-
         public override Game this[long id] {
             get {
                 try {
@@ -70,7 +63,7 @@ namespace MoshAppService.Service.Database {
         public Game this[Team team] {
             get {
                 //
-                return Games.ToList().Find(game => game.Value.Team.Equals(team)).Value;
+                return Games.ToList().Find(game => { return game.Value.Team.Equals(team); }).Value;
             }
         }
     }

@@ -13,8 +13,8 @@ namespace MoshAppService.Service.Database {
         #region Lazy-Initialized Singleton
 
         private static readonly Lazy<TaskDbProvider> _instance = new Lazy<TaskDbProvider>(() => new TaskDbProvider());
-        public static TaskDbProvider Instance { get { return _instance.Value; } }
         private TaskDbProvider() { }
+        public static TaskDbProvider Instance { get { return _instance.Value; } }
 
         #endregion
 
@@ -70,10 +70,6 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
-        protected override void InitializeDb() {
-
-        }
-
         public override Task this[long id] {
             get {
                 try {
@@ -83,13 +79,5 @@ namespace MoshAppService.Service.Database {
                 }
             }
         }
-
-        //        public static Task GetTask(long id) {
-        //            try {
-        //                return Tasks[id];
-        //            } catch (InvalidOperationException) {
-        //                return null;
-        //            }
-        //        }
     }
 }

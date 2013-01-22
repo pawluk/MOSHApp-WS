@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 
 using MoshAppService.Service.Data;
@@ -39,6 +38,8 @@ namespace MoshAppService.Service.Security {
             // No need to null-check user later on
             User user;
             if (!AuthenticateUser(userName, password, out user)) return false;
+
+            if (user == null) return false;
 
             var team = TeamDbProvider.Instance[user];
             var game = GameDbProvider.Instance[team];
@@ -79,7 +80,11 @@ namespace MoshAppService.Service.Security {
                 user = null;
                 return false;
             }
-            user = Data.User.FromLoginUser(login);
+
+            // With the current implementation using NHibernate, the fields related to the regular
+            // User class doesn't get sent (save for the ID). So let's retrieve the rest of the 
+            // information here.
+            user = UserDbProvider.Instance[login.Id];
             return PasswordHelper.CheckPassword(password, login.Password);
         }
     }
