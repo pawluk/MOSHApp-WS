@@ -10,6 +10,8 @@ namespace MoshAppService.Service.Data.Tasks {
         #region Properties
 
         public QuestionType Type { get; set; }
+        // Will only be set if QuestionType is Image or Sound
+        public string[] MediaUrl { get; set; }
         public string CorrectAnswer { get; set; }
 
         #endregion
