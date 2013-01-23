@@ -37,7 +37,7 @@ namespace MoshAppService.Service.Data.Tasks {
 
         #region Equality Members
 
-        internal override bool _Equals(Campus other) {
+        protected override bool _Equals(Campus other) {
             return string.Equals(Name, other.Name) &&
                    Latitude.Equals(other.Latitude) &&
                    Longitude.Equals(other.Longitude);

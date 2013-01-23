@@ -65,8 +65,9 @@ namespace MoshAppService.Service.Data {
 
         #region Equality Members
 
-        internal override bool _Equals(User other) {
-            return string.Equals(FirstName, other.FirstName) &&
+        protected override bool _Equals(User other) {
+            return string.Equals(Nickname, other.Nickname) &&
+                   string.Equals(FirstName, other.FirstName) &&
                    string.Equals(LastName, other.LastName) &&
                    string.Equals(Email, other.Email) &&
                    string.Equals(Phone, other.Phone) &&
@@ -75,7 +76,8 @@ namespace MoshAppService.Service.Data {
 
         public override int GetHashCode() {
             unchecked {
-                var hashCode = Id.GetHashCode();
+                var hashCode = base.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Nickname != null ? Nickname.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (FirstName != null ? FirstName.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (LastName != null ? LastName.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Email != null ? Email.GetHashCode() : 0);

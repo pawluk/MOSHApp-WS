@@ -74,7 +74,7 @@ namespace MoshAppService.Service.Data {
             return Id == other.Id && _Equals((T) other);
         }
 
-        internal abstract bool _Equals(T other);
+        protected abstract bool _Equals(T other);
 
         #endregion
     }

@@ -72,7 +72,7 @@ namespace MoshAppService.Service.Data {
 
         #region Equality Members
 
-        internal override bool _Equals(Game other) {
+        protected override bool _Equals(Game other) {
             return Equals(Team, other.Team) &&
                    Start.Equals(other.Start) &&
                    Finish.Equals(other.Finish) &&

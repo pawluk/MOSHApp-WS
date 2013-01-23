@@ -47,7 +47,7 @@ namespace MoshAppService.Service.Data.Tasks {
 
         #region Equality Members
 
-        internal override bool _Equals(Task other) {
+        protected override bool _Equals(Task other) {
             return Equals(Campus, other.Campus) &&
                    Equals(Direction, other.Direction) &&
                    Equals(Question, other.Question) &&

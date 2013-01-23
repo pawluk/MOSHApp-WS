@@ -45,7 +45,7 @@ namespace MoshAppService.Service.Data.Tasks {
 
         #region Equality Members
 
-        internal override bool _Equals(Direction other) {
+        protected override bool _Equals(Direction other) {
             return string.Equals(Text, other.Text) &&
                    Equals(Audio, other.Audio) &&
                    Equals(Image, other.Image) &&

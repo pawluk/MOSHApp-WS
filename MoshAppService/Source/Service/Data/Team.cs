@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using JetBrains.Annotations;
 
@@ -44,17 +45,25 @@ namespace MoshAppService.Service.Data {
 
         #region Equality Members
 
-        internal override bool _Equals(Team other) {
-            return string.Equals(Name, other.Name) &&
-                   Equals(TeamMembers, other.TeamMembers) &&
-                   string.Equals(ChatId, other.ChatId);
+        protected override bool _Equals(Team other) {
+            // For some reason this was returning false even when the other team's
+            // team members are identical to this one, so this workaround will do.
+            // The same situation will hold true for GetHashCode() as well.
+            var x = string.Equals(Name, other.Name);
+            x &= string.Equals(ChatId, other.ChatId);
+            for (var i = 0; i < TeamMembers.Count; i++)
+                x &= TeamMembers[i].Equals(other.TeamMembers[i]);
+            return x;
         }
 
         public override int GetHashCode() {
             unchecked {
-                var hashCode = Id.GetHashCode();
+                var hashCode = base.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (TeamMembers != null ? TeamMembers.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (ChatId != null ? ChatId.GetHashCode() : 0);
+                if (TeamMembers != null) {
+                    hashCode = TeamMembers.Aggregate(hashCode, (current, member) => (current * 397) ^ (member.GetHashCode()));
+                }
                 return hashCode;
             }
         }
