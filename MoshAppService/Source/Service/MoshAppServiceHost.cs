@@ -28,6 +28,7 @@ namespace MoshAppService.Service {
     [PublicAPI]
     public class MoshAppServiceHost : AppHostBase {
         private static readonly ILog Log;
+        public static ICacheClient Cache;
 
         static MoshAppServiceHost() {
             Log = LogManager.GetLogger(typeof(MoshAppServiceHost));
@@ -64,7 +65,7 @@ namespace MoshAppService.Service {
                                             IncludeAssignRoleServices = false
                                         });
 
-            container.Register<ICacheClient>(new MemoryCacheClient());
+            container.Register((Cache = new MemoryCacheClient()));
 
             Log.Debug(Config.Metadata.Dump());
             Log.Info("Service started!");
