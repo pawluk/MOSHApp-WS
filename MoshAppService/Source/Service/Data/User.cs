@@ -40,10 +40,11 @@ namespace MoshAppService.Service.Data {
         #region Constructors
 
         public User()
-            : this(-1, "", "", "", "", "") { }
+            : this(-1, "", "", "", "", "", "") { }
 
-        public User(long id, string firstName, string lastName, string email, string phone, string studentNumber) {
+        public User(long id, string nickname, string firstName, string lastName, string email, string phone, string studentNumber) {
             Id = id;
+            Nickname = nickname;
             FirstName = firstName;
             LastName = lastName;
             Email = email;
@@ -53,6 +54,7 @@ namespace MoshAppService.Service.Data {
 
         public User(User user)
             : this(user.Id,
+                   user.Nickname,
                    user.FirstName,
                    user.LastName,
                    user.Email,
