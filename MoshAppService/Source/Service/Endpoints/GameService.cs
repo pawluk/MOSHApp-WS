@@ -34,6 +34,7 @@ namespace MoshAppService.Service.Endpoints {
         [PublicAPI]
         public object Post(CheckIn request) {
             Log.Debug("/games/{1}/checkin:{0}{2}".F(Environment.NewLine, request.GameId, request.Dump()));
+            RequestContext.RemoveFromCache(Cache, "Leaderboard");
             return OkResponse();
         }
     }

@@ -13,6 +13,8 @@ using JetBrains.Annotations;
 using MoshAppService.Service.Security;
 using MoshAppService.Utils;
 
+using ServiceStack.CacheAccess;
+using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
@@ -42,10 +44,10 @@ namespace MoshAppService.Service {
             Log.Info("Starting service...");
 
             // Set up base configuration
-            var disableFeatures = Feature.Soap | Feature.Xml | Feature.Csv | Feature.Jsv;
+            const Feature disableFeatures = Feature.Soap | Feature.Xml | Feature.Csv | Feature.Jsv;
             SetConfig(new EndpointHostConfig {
                 EnableFeatures = Feature.All.Remove(disableFeatures),
-                //                DebugMode = false,
+                DebugMode = true,
                 DefaultContentType = ContentType.Json
             });
 
@@ -61,6 +63,8 @@ namespace MoshAppService.Service {
                                             HtmlRedirect = null,
                                             IncludeAssignRoleServices = false
                                         });
+
+            container.Register<ICacheClient>(new MemoryCacheClient());
 
             Log.Debug(Config.Metadata.Dump());
             Log.Info("Service started!");
