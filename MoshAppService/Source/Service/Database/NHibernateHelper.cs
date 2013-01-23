@@ -4,6 +4,7 @@
 // Author: Jason Recillo
 
 using System;
+using System.Configuration;
 using System.Reflection;
 using System.Web;
 
@@ -12,12 +13,18 @@ using NHibernate.Cfg;
 using NHibernate.Dialect;
 using NHibernate.Mapping.ByCode;
 
+using ServiceStack.Logging;
+
+using Configuration = NHibernate.Cfg.Configuration;
+
 namespace MoshAppService.Service.Database {
-    public class NHibernateHelper {
+    public static class NHibernateHelper {
         private const string CurrentSessionKey = "nhibernate.current_session";
         private static readonly ISessionFactory SessionFactory;
 
         static NHibernateHelper() {
+            LogManager.GetLogger(typeof(NHibernateHelper)).Info("Instantiating NHibernate...");
+
             var mapper = new ModelMapper();
             mapper.AddMappings(Assembly.GetExecutingAssembly().GetExportedTypes());
 
@@ -28,7 +35,7 @@ namespace MoshAppService.Service.Database {
             var configuration = new Configuration();
             configuration.DataBaseIntegration(c => {
                 c.Dialect<MySQL5Dialect>();
-                c.ConnectionString = "Server=localhost;Database=c9mosh;User ID=c9mosh;Password=moshgbc;";
+                c.ConnectionString = ConfigurationManager.ConnectionStrings["MoshConnection"].ConnectionString;
                 c.LogSqlInConsole = true;
             });
 
@@ -48,6 +55,12 @@ namespace MoshAppService.Service.Database {
             return currentSession;
         }
 
+        public static ISession GetCurrentSessionAndStartTransaction(out ITransaction tx) {
+            var session = GetCurrentSession();
+            tx = session.BeginTransaction();
+            return session;
+        }
+
         public static void CloseSession() {
             var context = HttpContext.Current;
             var currentSession = context.Items[CurrentSessionKey] as ISession;
@@ -59,6 +72,11 @@ namespace MoshAppService.Service.Database {
 
             currentSession.Close();
             context.Items.Remove(CurrentSessionKey);
+        }
+
+        public static void EndTransactionAndCloseSession(ITransaction transaction) {
+            transaction.Commit();
+            CloseSession();
         }
 
         public static void CloseSessionFactory() {

@@ -33,7 +33,7 @@ namespace MoshAppService.Service.Security {
         #endregion
 
         public override bool TryAuthenticate(IServiceBase authService, string userName, string password) {
-            Log.Debug("TryAuthenticate({0}, {1})".F(userName, password));
+            Log.Debug("Authenticating {0}...".F(userName));
 
             // No need to null-check user later on
             User user;
@@ -41,7 +41,10 @@ namespace MoshAppService.Service.Security {
 
             if (user == null) return false;
 
+            Log.Debug("Obtaining team for {0}".F(userName));
             var team = TeamDbProvider.Instance[user];
+
+            Log.Debug("Obtaining game for {0}".F(userName));
             var game = GameDbProvider.Instance[team];
 
             var session = authService.GetSession();

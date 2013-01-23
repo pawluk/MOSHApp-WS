@@ -5,10 +5,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 using MoshAppService.Service.Data;
 using MoshAppService.Service.Data.Tasks;
+
+using MySql.Data.MySqlClient;
 
 namespace MoshAppService.Service.Database {
     public class GameDbProvider : BaseDbProvider<Game> {
@@ -58,6 +61,10 @@ namespace MoshAppService.Service.Database {
                     return null;
                 }
             }
+        }
+
+        protected override Game BuildObject(MySqlDataReader reader) {
+            throw new NotImplementedException();
         }
 
         public Game this[Team team] {

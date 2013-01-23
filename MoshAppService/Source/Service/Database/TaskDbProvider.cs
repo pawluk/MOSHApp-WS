@@ -5,8 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 
 using MoshAppService.Service.Data.Tasks;
+
+using MySql.Data.MySqlClient;
 
 namespace MoshAppService.Service.Database {
     public class TaskDbProvider : BaseDbProvider<Task> {
@@ -78,6 +81,10 @@ namespace MoshAppService.Service.Database {
                     return null;
                 }
             }
+        }
+
+        protected override Task BuildObject(MySqlDataReader reader) {
+            throw new NotImplementedException();
         }
     }
 }

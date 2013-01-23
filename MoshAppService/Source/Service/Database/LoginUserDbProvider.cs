@@ -4,10 +4,13 @@
 // Author: Jason Recillo
 
 using System;
+using System.Data;
 
 using JetBrains.Annotations;
 
 using MoshAppService.Service.Data;
+
+using MySql.Data.MySqlClient;
 
 namespace MoshAppService.Service.Database {
     [UsedImplicitly]
@@ -35,6 +38,10 @@ namespace MoshAppService.Service.Database {
                 NHibernateHelper.CloseSession();
                 return user;
             }
+        }
+
+        protected override User BuildObject(MySqlDataReader reader) {
+            throw new NotImplementedException();
         }
     }
 }

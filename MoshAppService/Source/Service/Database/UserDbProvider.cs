@@ -4,9 +4,16 @@
 // Author: Jason Recillo
 
 using System;
+using System.Data;
 using System.Linq;
 
 using MoshAppService.Service.Data;
+using MoshAppService.Utils;
+
+using MySql.Data.MySqlClient;
+
+using NHibernate;
+using NHibernate.Linq;
 
 namespace MoshAppService.Service.Database {
     public class UserDbProvider : BaseDbProvider<User> {
@@ -20,23 +27,26 @@ namespace MoshAppService.Service.Database {
 
         public override User this[long id] {
             get {
-                var session = NHibernateHelper.GetCurrentSession();
-                var tx = session.BeginTransaction();
+                ITransaction tx;
+                var session = NHibernateHelper.GetCurrentSessionAndStartTransaction(out tx);
 
-                var query = session.CreateQuery("from User u where u.Id=:id");
-                query.SetInt64("id", id);
+                // In the current implementation, because LoginUser derives from User, it will also
+                // appear in the query results (however all its fields will be blank), which is why
+                // that in this current workaround, we have to do add a Single() call, in which we
+                // check that the database fields marked NOT NULL are actually not null or empty.
+                var user = session.Query<User>()
+                                  .Where(x => x.Id == id).AsEnumerable()
+                                  .Single(x => x.FirstName.IsNotNullOrEmpty() &&
+                                               x.LastName.IsNotNullOrEmpty() &&
+                                               x.StudentNumber.IsNotNullOrEmpty());
 
-                // In the current implementation, because LoginUser derives from User,
-                // it will also appear in the query results. In the current workaround,
-                // we'll just filter out the results that aren't a User (there should
-                // only really be two results anyway).
-                var user = query.Enumerable<User>().ToList().Find(x => x.GetType() == typeof(User));
-                // var user = query.UniqueResult<User>();
-
-                tx.Commit();
-                NHibernateHelper.CloseSession();
-                return user;
+                NHibernateHelper.EndTransactionAndCloseSession(tx);
+                return user as User;
             }
+        }
+
+        protected override User BuildObject(MySqlDataReader reader) {
+            throw new NotImplementedException();
         }
     }
 }
