@@ -12,17 +12,15 @@ using ServiceStack.ServiceHost;
 
 namespace MoshAppService.Service.Data {
     [PublicAPI]
-    [Route("/teams/{Id}")]
+    [Route("/teams")]
+    [Route("/teams/{Id}", "GET")]
     public class Team : Entity<Team> {
         #region Properties
 
         public string Name { get; set; }
         // Populated using the Team_User table
         public List<User> TeamMembers { get; set; }
-
-        // What to do with these two fields?
-        //        public long ChatId { get; set; }
-        //        public string ChatUuid { get; set; }
+        public string ChatId { get; set; }
 
         #endregion
 
@@ -48,7 +46,8 @@ namespace MoshAppService.Service.Data {
 
         internal override bool _Equals(Team other) {
             return string.Equals(Name, other.Name) &&
-                   Equals(TeamMembers, other.TeamMembers);
+                   Equals(TeamMembers, other.TeamMembers) &&
+                   string.Equals(ChatId, other.ChatId);
         }
 
         public override int GetHashCode() {
