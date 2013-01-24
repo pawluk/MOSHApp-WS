@@ -35,7 +35,6 @@ namespace MoshAppService.Service.Security {
         public override bool TryAuthenticate(IServiceBase authService, string userName, string password) {
             Log.Debug("Authenticating {0}...".F(userName));
 
-            // No need to null-check user later on
             User user;
             if (!AuthenticateUser(userName, password, out user)) return false;
 
@@ -44,8 +43,12 @@ namespace MoshAppService.Service.Security {
             Log.Debug("Obtaining team for {0}".F(userName));
             var team = TeamDbProvider.Instance[user];
 
+            if (team == null) return false;
+
             Log.Debug("Obtaining game for {0}".F(userName));
             var game = GameDbProvider.Instance[team];
+
+            if (game == null) return false;
 
             var session = authService.GetSession();
             // PopulateWith() is really great, but it replaces the default 
@@ -63,6 +66,23 @@ namespace MoshAppService.Service.Security {
 
             session.UserAuthName = userName;
             session.UserAuthId = user.Id.ToString(CultureInfo.InvariantCulture);
+
+            var userKey = "User {0}".F(user.Id);
+            var gameKey = "Game {0}".F(game.Id);
+
+            // Cache the user and game objects so they will be easier to
+            // obtain again later in other service classes (i.e., check-in)
+            if (Global.Cache.Get<User>(userKey) == null) {
+                // This cache entry will remain cached for one day
+                // OR until the user logs out, whichever comes first
+                Global.Cache.Add(userKey, user, new TimeSpan(1));
+            }
+
+            if (Global.Cache.Get<Game>(gameKey) == null) {
+                // This cache entry will stay cached until the 
+                // game ends OR if it is invalidated elsewhere
+                Global.Cache.Add(gameKey, game, game.Finish);
+            }
 
             return true;
         }
@@ -84,10 +104,7 @@ namespace MoshAppService.Service.Security {
                 return false;
             }
 
-            // With the current implementation using NHibernate, the fields related to the regular
-            // User class doesn't get sent (save for the ID). So let's retrieve the rest of the 
-            // information here.
-            user = UserDbProvider.Instance[login.Id];
+            user = Data.User.FromLoginUser(login);
             return PasswordHelper.CheckPassword(password, login.Password);
         }
     }

@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 
 using MoshAppService.Service.Data;
@@ -25,7 +24,7 @@ namespace MoshAppService.Service.Database {
 
         #region Temporary in-memory "Database"
 
-        internal static readonly Dictionary<long, Game> Games = new Dictionary<long, Game> {
+        private static readonly Dictionary<long, Game> Games = new Dictionary<long, Game> {
             {
                 0, new Game {
                     Id = 0,
@@ -34,8 +33,8 @@ namespace MoshAppService.Service.Database {
                         TaskDbProvider.Instance[0],
                         TaskDbProvider.Instance[1]
                     },
-                    Start = new DateTime(2012, 12, 21, 10, 0, 0, DateTimeKind.Local),
-                    Finish = new DateTime(2012, 12, 22, 12, 0, 0, DateTimeKind.Local)
+                    Start = new DateTime(2013, 2, 1, 10, 0, 0, DateTimeKind.Local),
+                    Finish = new DateTime(2013, 2, 2, 12, 0, 0, DateTimeKind.Local)
                 }
             }, {
                 1, new Game {
@@ -45,8 +44,8 @@ namespace MoshAppService.Service.Database {
                         TaskDbProvider.Instance[1],
                         TaskDbProvider.Instance[0]
                     },
-                    Start = new DateTime(2012, 12, 21, 10, 0, 0, DateTimeKind.Local),
-                    Finish = new DateTime(2012, 12, 22, 10, 0, 0, DateTimeKind.Local)
+                    Start = new DateTime(2013, 2, 1, 10, 0, 0, DateTimeKind.Local),
+                    Finish = new DateTime(2013, 2, 2, 10, 0, 0, DateTimeKind.Local)
                 }
             }
         };
@@ -55,6 +54,7 @@ namespace MoshAppService.Service.Database {
 
         public override Game this[long id] {
             get {
+                CheckIdIsValid(id);
                 try {
                     return Games[id];
                 } catch (InvalidOperationException) {
@@ -63,15 +63,18 @@ namespace MoshAppService.Service.Database {
             }
         }
 
-        protected override Game BuildObject(MySqlDataReader reader) {
-            throw new NotImplementedException();
-        }
-
         public Game this[Team team] {
             get {
-                //
-                return Games.ToList().Find(game => { return game.Value.Team.Equals(team); }).Value;
+                try {
+                    return team != null ? Games.Single(x => x.Value.Team.Equals(team)).Value : null;
+                } catch (InvalidOperationException) {
+                    return null;
+                }
             }
+        }
+
+        protected override Game BuildObject(MySqlDataReader reader) {
+            throw new NotImplementedException();
         }
     }
 }

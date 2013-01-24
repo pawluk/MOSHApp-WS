@@ -23,18 +23,80 @@ namespace MoshAppService.Service.Database {
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(TeamDbProvider));
 
-        private const string BaseQuery = "SELECT " +
-                                         "teams.*,users.* " +
-                                         "FROM " +
-                                         "users INNER JOIN " +
-                                         "team_user ON team_user.u_id = users.u_id INNER JOIN " +
-                                         "teams ON team_user.t_id = teams.t_id ";
+        // Select whole team (given a team ID)
+        private const string SelectQuery = "SELECT " +
+                                           "  teams.*,users.* " +
+                                           "FROM users INNER JOIN " +
+                                           "  team_user ON team_user.u_id = users.u_id " +
+                                           "  INNER JOIN teams ON team_user.t_id = teams.t_id " +
+                                           "WHERE teams.t_id = @id";
 
-        private const string SelectQuery = BaseQuery + "WHERE teams.t_id = @Id";
-        private const string UserSelectQuery = BaseQuery + "WHERE users.u_id = @Id";
+        // Select whole team (given a team member's user ID)
+        private const string UserSelectQuery = "SELECT " +
+                                               "  users.*, teams.* " +
+                                               "FROM team_user INNER JOIN " +
+                                               "  teams ON team_user.t_id = teams.t_id INNER JOIN " +
+                                               "  users ON team_user.u_id = users.u_id, " +
+                                               "   (SELECT " +
+                                               "    team_user.t_id As TeamId," +
+                                               "    team_user.u_id As UserId " +
+                                               "    FROM team_user) TeamMember " +
+                                               "WHERE " +
+                                               "  TeamMember.TeamId = team_user.t_id AND " +
+                                               "  TeamMember.UserId = @id";
+
+        public override Team this[long id] {
+            get {
+                CheckIdIsValid(id);
+
+                MySqlTransaction tx;
+                MySqlDataReader reader = null;
+                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
+                    try {
+                        var cmd = new MySqlCommand {
+                            Connection = conn,
+                            CommandText = SelectQuery
+                        };
+                        cmd.Prepare();
+                        cmd.Parameters.AddWithValue("@id", id);
+
+                        reader = cmd.ExecuteReader();
+                        var team = BuildObject(reader);
+                        reader.Close();
+
+                        return team;
+                    } finally {
+                        DbHelper.CloseConnectionAndEndTransaction(conn, tx, reader);
+                    }
+                }
+            }
+        }
+
+        public Team this[User user] {
+            get {
+                MySqlTransaction tx;
+                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = UserSelectQuery
+                    };
+                    cmd.Prepare();
+                    cmd.Parameters.AddWithValue("@id", user.Id);
+
+                    var reader = cmd.ExecuteReader();
+                    var team = BuildObject(reader);
+
+                    reader.Close();
+                    tx.Commit();
+                    conn.Close();
+
+                    return team;
+                }
+            }
+        }
 
         protected override Team BuildObject(MySqlDataReader reader) {
-            if (!reader.Read()) return null;
+            if (!reader.Read() || !reader.HasRows) return null;
 
             var team = new Team {
                 Id = reader.GetInt64("t_id"),
@@ -55,50 +117,6 @@ namespace MoshAppService.Service.Database {
             } while (reader.Read());
 
             return team;
-        }
-
-        public override Team this[long id] {
-            get {
-                MySqlTransaction tx;
-                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
-                    try {
-                        var cmd = conn.CreateCommand();
-                        cmd.CommandText = SelectQuery;
-                        cmd.Prepare();
-                        cmd.Parameters.AddWithValue("@Id", id);
-
-                        var reader = cmd.ExecuteReader();
-                        var team = BuildObject(reader);
-                        reader.Close();
-
-                        return team;
-                    } finally {
-                        DbHelper.CloseConnectionAndEndTransaction(conn, tx);
-                    }
-                }
-            }
-        }
-
-        public Team this[User user] {
-            get {
-                using (var conn = DbHelper.OpenConnection()) {
-                    var tx = conn.BeginTransaction();
-
-                    var cmd = conn.CreateCommand();
-                    cmd.CommandText = UserSelectQuery;
-                    cmd.Prepare();
-                    cmd.Parameters.AddWithValue("@Id", user.Id);
-
-                    var reader = cmd.ExecuteReader();
-                    var team = BuildObject(reader);
-
-                    reader.Close();
-                    tx.Commit();
-                    conn.Close();
-
-                    return team;
-                }
-            }
         }
     }
 }

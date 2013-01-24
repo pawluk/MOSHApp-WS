@@ -4,16 +4,10 @@
 // Author: Jason Recillo
 
 using System;
-using System.Data;
-using System.Linq;
 
 using MoshAppService.Service.Data;
-using MoshAppService.Utils;
 
 using MySql.Data.MySqlClient;
-
-using NHibernate;
-using NHibernate.Linq;
 
 namespace MoshAppService.Service.Database {
     public class UserDbProvider : BaseDbProvider<User> {
@@ -25,28 +19,46 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
+        private const string Query = "SELECT * FROM users WHERE u_id = @id";
+
         public override User this[long id] {
             get {
-                ITransaction tx;
-                var session = NHibernateHelper.GetCurrentSessionAndStartTransaction(out tx);
+                CheckIdIsValid(id);
 
-                // In the current implementation, because LoginUser derives from User, it will also
-                // appear in the query results (however all its fields will be blank), which is why
-                // that in this current workaround, we have to do add a Single() call, in which we
-                // check that the database fields marked NOT NULL are actually not null or empty.
-                var user = session.Query<User>()
-                                  .Where(x => x.Id == id).AsEnumerable()
-                                  .Single(x => x.FirstName.IsNotNullOrEmpty() &&
-                                               x.LastName.IsNotNullOrEmpty() &&
-                                               x.StudentNumber.IsNotNullOrEmpty());
+                MySqlTransaction tx;
+                MySqlDataReader reader = null;
+                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
+                    try {
+                        var cmd = new MySqlCommand {
+                            Connection = conn,
+                            CommandText = Query
+                        };
+                        cmd.Prepare();
+                        cmd.Parameters.AddWithValue("id", id);
 
-                NHibernateHelper.EndTransactionAndCloseSession(tx);
-                return user as User;
+                        reader = cmd.ExecuteReader();
+                        var user = BuildObject(reader);
+                        reader.Close();
+
+                        return user;
+                    } finally {
+                        DbHelper.CloseConnectionAndEndTransaction(conn, tx, reader);
+                    }
+                }
             }
         }
 
         protected override User BuildObject(MySqlDataReader reader) {
-            throw new NotImplementedException();
+            if (!reader.Read() || !reader.HasRows) return null;
+            return new User {
+                Id = reader.GetInt64("u_id"),
+                Nickname = reader.GetString("u_nicknme"),
+                FirstName = reader.GetString("u_fname"),
+                LastName = reader.GetString("u_lastname"),
+                Email = reader.GetString("u_email"),
+                Phone = reader.GetString("u_phone"),
+                StudentNumber = reader.GetString("s_num")
+            };
         }
     }
 }
