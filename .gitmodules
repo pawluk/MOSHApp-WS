@@ -1,0 +1,6 @@
+[submodule "DatabaseSQL"]
+	path = DatabaseSQL
+	url = https://github.com/eede/MoshApp-DB.git
+[submodule "MoshAppService/MoshApp-DB"]
+	path = MoshAppService/MoshApp-DB
+	url = https://github.com/eede/MoshApp-DB.git
