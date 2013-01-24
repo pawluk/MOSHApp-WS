@@ -25,6 +25,12 @@ function write {
   printf "\n$1\n\n"
 }
 
+# Check command line arguments
+if [[ -z $1 ]] || [[ -z $2 ]]; then
+  write "Please specify the username and password to test.\nUsage: $0 <user> <pass>"
+  exit
+fi
+
 clear
 
 # First check if the required applications are installed
@@ -60,8 +66,8 @@ GET="-X GET"
 PUT="-X PUT"
 DELETE="-X DELETE"
 
-TESTUSER=tkim
-TESTPASS=123456
+TESTUSER=$1
+TESTPASS=$2
 
 USER_JSON="-d {\"userName\":\"$TESTUSER\",\"password\":\"$TESTPASS\"}"
 USER_FORM="-d userName=$TESTUSER -d password=$TESTPASS"
@@ -86,12 +92,13 @@ if [ $RUNTEST -eq 1 ]; then
 fi
 
 write "Now logging in and using the returned session ID for the other features..."
+write "URL: $HOST/authenticate\nData: $USER_JSON"
 
 # Now that we know that we can login, let's use the session ID it gives us to test the other features
 sessionId=$(curl $POST $HOST/authenticate $USER_JSON -H "$JSON_HEADER" | awk -F '"' '{print $4}')
 
 if [ $? -ne 0 ] || [ $sessionId == "errorCode" ] || [ $sessionId == "" ]; then
- die "Error logging in."
+ die "Error logging in. Please check service debug log for details."
 fi
 
 write "Logged in successfully!\nSession ID is $sessionId"
