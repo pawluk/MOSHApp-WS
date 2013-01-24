@@ -61,9 +61,7 @@ namespace MoshAppService.Service.Data {
                 var hashCode = base.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (ChatId != null ? ChatId.GetHashCode() : 0);
-                if (TeamMembers != null) {
-                    hashCode = TeamMembers.Aggregate(hashCode, (current, member) => (current * 397) ^ (member.GetHashCode()));
-                }
+                if (TeamMembers != null) hashCode = TeamMembers.Aggregate(hashCode, (current, member) => (current * 397) ^ (member.GetHashCode()));
                 return hashCode;
             }
         }

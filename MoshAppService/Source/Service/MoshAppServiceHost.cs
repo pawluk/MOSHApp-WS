@@ -13,7 +13,6 @@ using JetBrains.Annotations;
 using MoshAppService.Service.Security;
 using MoshAppService.Utils;
 
-using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;

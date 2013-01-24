@@ -17,6 +17,7 @@ namespace MoshAppService.Utils {
         public static bool IsNullOrEmpty(this string input) {
             return string.IsNullOrEmpty(input);
         }
+
         public static bool IsNotNullOrEmpty(this string input) {
             return !string.IsNullOrEmpty(input);
         }
