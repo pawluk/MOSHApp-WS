@@ -1,9 +1,6 @@
 ﻿// Project: MoshAppService
 // Filename: Global.asax.cs
 // 
-// Date: 23/12/2012
-// Time: 9:29 PM
-// 
 // Author: Jason Recillo
 
 using System;
@@ -11,12 +8,15 @@ using System.Web;
 
 using MoshAppService.Service;
 
+using ServiceStack.CacheAccess;
 using ServiceStack.Logging;
 using ServiceStack.Logging.NLogger;
 using ServiceStack.MiniProfiler;
 
 namespace MoshAppService {
     public class Global : HttpApplication {
+        public static ICacheClient Cache;
+
         protected void Application_Start(object sender, EventArgs e) {
             LogManager.LogFactory = new NLogFactory();
             LogManager.GetLogger(typeof(Global)).Info("Application start!");
