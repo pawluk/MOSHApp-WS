@@ -3,4 +3,4 @@
 	url = https://github.com/eede/MoshApp-DB.git
 [submodule "MoshAppService/MoshApp-DB"]
 	path = MoshAppService/MoshApp-DB
-	url = https://github.com/eede/MoshApp-DB.git
+	url = git@github.com:jaysan1292/MoshApp-DB.git
