@@ -13,7 +13,6 @@ using MoshAppService.Service.Database;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
-using ServiceStack.Text;
 
 namespace MoshAppService.Service.Endpoints {
     [PublicAPI, Authenticate]
@@ -21,7 +20,6 @@ namespace MoshAppService.Service.Endpoints {
         private static readonly ILog Log = LogManager.GetLogger(typeof(UserService));
 
         public object Get(User request) {
-            Log.Debug(Session.Dump());
             if (request.Id == -1 || !IsLoggedIn) return UnauthorizedResponse();
 
             // Only allow the user to see their own profile or the profile of anyone on their team

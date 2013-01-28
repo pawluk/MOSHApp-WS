@@ -34,6 +34,7 @@ namespace MoshAppService.Service.Endpoints {
         [PublicAPI]
         public object Post(CheckIn request) {
             Log.Debug("/games/{1}/checkin:{0}{2}".F(Environment.NewLine, request.GameId, request.Dump()));
+            Log.Debug("{0} has checked in".F(Cache.Get<User>("User{0}".F(UserId))));
             RequestContext.RemoveFromCache(Cache, "Leaderboard");
             return OkResponse();
         }

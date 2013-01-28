@@ -35,7 +35,7 @@ namespace MoshAppService.Service.Endpoints {
                 };
             }
 
-            internal override bool _Equals(LeaderboardTeam other) {
+            protected override bool _Equals(LeaderboardTeam other) {
                 return TeamName.Equals(other.TeamName) &&
                        TimeSpent.Equals(other.TimeSpent);
             }
@@ -44,6 +44,7 @@ namespace MoshAppService.Service.Endpoints {
 
     public class LeaderboardService : MoshAppServiceBase {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LeaderboardService));
+
         public object Get(Leaderboard request) {
             // Cache the leaderboard to avoid generating it multiple times, if 
             // the data hasn't changed. The leaderboard cache will be invalidated 
@@ -65,4 +66,3 @@ namespace MoshAppService.Service.Endpoints {
         }
     }
 }
-
