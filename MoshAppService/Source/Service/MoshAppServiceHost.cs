@@ -54,14 +54,13 @@ namespace MoshAppService.Service {
             JsConfig.EmitCamelCaseNames = true;
 
             // Set up authentication service
-            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                                        new IAuthProvider[] { new MoshAppAuthProvider() }) {
-                                            ServiceRoutes = new Dictionary<Type, string[]> {
-                                                { typeof(AuthService), new[] { "/authenticate" } },
-                                            },
-                                            HtmlRedirect = null,
-                                            IncludeAssignRoleServices = false
-                                        });
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] { new MoshAppAuthProvider() }) {
+                ServiceRoutes = new Dictionary<Type, string[]> {
+                    { typeof(AuthService), new[] { "/authenticate" } },
+                },
+                HtmlRedirect = null,
+                IncludeAssignRoleServices = false,
+            });
 
             container.Register((Global.Cache = new MemoryCacheClient()));
 

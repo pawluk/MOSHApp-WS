@@ -87,11 +87,6 @@ namespace MoshAppService.Service.Security {
             return true;
         }
 
-        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo) {
-            Log.Debug("OnAuthenticated:{0}{1}{0}{2}".F(Environment.NewLine, authService, session.Dump()));
-            base.OnAuthenticated(authService, session, tokens, authInfo);
-        }
-
         private static bool AuthenticateUser(string username, string password, out User user) {
             // Here, we would check the database and authenticate with the given credentials
             var login = LoginUserDbProvider.Instance[username];
@@ -106,6 +101,11 @@ namespace MoshAppService.Service.Security {
 
             user = Data.User.FromLoginUser(login);
             return PasswordHelper.CheckPassword(password, login.Password);
+        }
+
+        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo) {
+            Log.Debug("OnAuthenticated:{0}{1}{0}{2}".F(Environment.NewLine, authService, session.Dump()));
+            base.OnAuthenticated(authService, session, tokens, authInfo);
         }
     }
 }

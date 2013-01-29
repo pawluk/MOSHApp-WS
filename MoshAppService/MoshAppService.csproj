@@ -93,7 +93,6 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
@@ -134,6 +133,7 @@
     <Compile Include="Source\Service\Data\Tasks\Question.cs" />
     <Compile Include="Source\Service\Data\Tasks\Task.cs" />
     <Compile Include="Source\Service\Endpoints\GameService.cs" />
+    <Compile Include="Source\Service\Endpoints\InfoService.cs" />
     <Compile Include="Source\Service\Endpoints\LeaderboardService.cs" />
     <Compile Include="Source\Service\Endpoints\MoshAppServiceBase.cs" />
     <Compile Include="Source\Service\Endpoints\TaskService.cs" />
@@ -148,6 +148,7 @@
     <Compile Include="Source\Service\Security\MoshAppAuthProvider.cs" />
     <Compile Include="Source\Service\Security\PasswordHelper.cs" />
     <Compile Include="Source\Utils\ReflectionUtils.cs" />
+    <Compile Include="Source\Utils\ServiceExtensions.cs" />
     <Compile Include="Source\Utils\StringExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
