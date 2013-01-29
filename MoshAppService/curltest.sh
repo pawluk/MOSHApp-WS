@@ -97,7 +97,7 @@ write "URL: $HOST/authenticate\nData: $USER_JSON"
 # Now that we know that we can login, let's use the session ID it gives us to test the other features
 sessionId=$(curl $POST $HOST/authenticate $USER_JSON -H "$JSON_HEADER" | awk -F '"' '{print $4}')
 
-if [ $? -ne 0 ] || [ $sessionId == "errorCode" ] || [ $sessionId == "" ]; then
+if [ $? -ne 0 ] || [[ $sessionId == "errorCode" ]] || [[ $sessionId == "" ]]; then
  die "Error logging in. Please check service debug log for details."
 fi
 
