@@ -53,6 +53,9 @@ namespace MoshAppService.Service {
             // Set JSON services to return "camelCase" rather than "CamelCase"
             JsConfig.EmitCamelCaseNames = true;
 
+            // Set dates to serialize to ISO-8601 dates
+            JsConfig.DateHandler = JsonDateHandler.ISO8601;
+
             // Set up authentication service
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] { new MoshAppAuthProvider() }) {
                 ServiceRoutes = new Dictionary<Type, string[]> {
