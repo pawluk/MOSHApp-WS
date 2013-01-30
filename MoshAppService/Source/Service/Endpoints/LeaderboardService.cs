@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using JetBrains.Annotations;
 
@@ -24,21 +25,45 @@ namespace MoshAppService.Service.Endpoints {
             Teams = new List<LeaderboardTeam>();
         }
 
-        public class LeaderboardTeam : Entity<LeaderboardTeam> {
+        [Route("/leaderboard/{TeamId}", "GET")]
+        public class LeaderboardTeam {
+            public long TeamId { get; set; }
             public string TeamName { get; set; }
             public TimeSpan TimeSpent { get; set; }
+            public List<LeaderboardUser> TeamMembers { get; set; }
 
             public static LeaderboardTeam FromTeam(Team team) {
-                return new LeaderboardTeam {
-                    Id = team.Id,
-                    TeamName = team.Name
+                var lt = new LeaderboardTeam {
+                    TeamId = team.Id,
+                    TeamName = team.Name,
                 };
+                lt.TeamMembers = new List<LeaderboardUser>(team.TeamMembers.Select(x => new LeaderboardUser(lt, x)));
+                return lt;
             }
+        }
 
-            protected override bool _Equals(LeaderboardTeam other) {
-                return TeamName.Equals(other.TeamName) &&
-                       TimeSpent.Equals(other.TimeSpent);
+        [Route("/leaderboard/{TeamId}/{UserId}", "GET")]
+        public class LeaderboardUser {
+            public long TeamId { get; set; }
+            public long UserId { get; set; }
+            public string TeamName { get; set; }
+            public string Nickname { get; set; }
+            public List<LeaderboardTask> Tasks { get; set; }
+
+            public LeaderboardUser(LeaderboardTeam team, User user) {
+                TeamId = team.TeamId;
+                UserId = user.Id;
+                TeamName = team.TeamName;
+                Nickname = user.Nickname;
+                Tasks = new List<LeaderboardTask>();
+                // TODO: Set tasks
             }
+        }
+
+        public class LeaderboardTask {
+            public string TaskName;
+            public int TaskStatus;
+            public TimeSpan TimeSpent;
         }
     }
 
@@ -52,6 +77,14 @@ namespace MoshAppService.Service.Endpoints {
             return RequestContext.ToOptimizedResultUsingCache(Cache,
                                                               "Leaderboard",
                                                               GenerateLeaderboard);
+        }
+
+        public object Get(Leaderboard.LeaderboardUser request) {
+            throw new NotImplementedException();
+        }
+
+        public object Get(Leaderboard.LeaderboardTeam request) {
+            throw new NotImplementedException();
         }
 
         private static Leaderboard GenerateLeaderboard() {
