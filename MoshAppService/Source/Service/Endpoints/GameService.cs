@@ -4,6 +4,7 @@
 // Author: Jason Recillo
 
 using System;
+using System.Net;
 
 using JetBrains.Annotations;
 
@@ -11,6 +12,7 @@ using MoshAppService.Service.Data;
 using MoshAppService.Service.Database;
 using MoshAppService.Utils;
 
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -36,7 +38,7 @@ namespace MoshAppService.Service.Endpoints {
             Log.Debug("/games/{1}/checkin:{0}{2}".F(Environment.NewLine, request.GameId, request.Dump()));
             Log.Debug("{0} has checked in".F(Cache.Get<User>("User{0}".F(UserId))));
             RequestContext.RemoveFromCache(Cache, "Leaderboard");
-            return OkResponse();
+            return new HttpResult(null, HttpStatusCode.NoContent);
         }
     }
 }
