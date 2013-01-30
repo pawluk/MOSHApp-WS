@@ -43,7 +43,7 @@ namespace MoshAppService.Service.Database {
                         CorrectAnswer = "A thing",
                         Type = QuestionType.Text
                     },
-                    Previous = null
+                    Previous = -1
                 }
             }, {
                 1, new Task {
@@ -65,7 +65,7 @@ namespace MoshAppService.Service.Database {
                         CorrectAnswer = "A thing",
                         Type = QuestionType.Text
                     },
-                    Previous = null
+                    Previous = -1
                 }
             }
         };

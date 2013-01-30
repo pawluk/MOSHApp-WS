@@ -19,22 +19,25 @@ namespace MoshAppService.Service.Data.Tasks {
         public Campus Campus { get; set; }
         public Direction Direction { get; set; }
         public Question Question { get; set; }
-        public Task Previous { get; set; }
+        public long Previous { get; set; }
 
         #endregion
 
         #region Constructors
 
         public Task()
-            : this(-1, new Campus(), new Direction(), new Question(), null) { }
+            : this(-1, new Campus(), new Direction(), new Question(), -1) { }
 
-        public Task(long id, Campus c, Direction d, Question q, Task prev)
+        public Task(long id, Campus c, Direction d, Question q, long prevId)
             : base(id) {
             Campus = c;
             Direction = d;
             Question = q;
-            Previous = prev;
+            Previous = prevId;
         }
+
+        public Task(long id, Campus c, Direction d, Question q, Task prev)
+            : this(id, c, d, q, prev != null ? prev.Id : -1) { }
 
         public Task(Task other)
             : this(other.Id,
