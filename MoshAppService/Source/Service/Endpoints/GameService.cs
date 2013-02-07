@@ -35,8 +35,9 @@ namespace MoshAppService.Service.Endpoints {
         // either application/json or application/x-www-form-urlencoded format
         [PublicAPI]
         public object Post(CheckIn request) {
+            //TODO: Get game from database
             Log.Debug("/games/{1}/checkin:{0}{2}".F(Environment.NewLine, request.GameId, request.Dump()));
-            Log.Debug("{0} has checked in".F(Cache.Get<User>("User{0}".F(UserId))));
+            Log.Debug("{0} has checked in".F(Cache.Get<User>("User {0}".F(UserId)).Nickname));
             RequestContext.RemoveFromCache(Cache, "Leaderboard");
             return new HttpResult(null, HttpStatusCode.NoContent);
         }
