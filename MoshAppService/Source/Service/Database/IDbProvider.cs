@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Project: MoshAppService
+// Filename: IDbProvider.cs
+// 
+// Author: Jason Recillo
+
+using System;
 
 using MoshAppService.Service.Data;
 

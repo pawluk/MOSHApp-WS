@@ -75,7 +75,7 @@ namespace MoshAppService.Service.Security {
             if (Global.Cache.Get<User>(userKey) == null) {
                 // This cache entry will remain cached for one day
                 // OR until the user logs out, whichever comes first
-                Global.Cache.Add(userKey, user, new TimeSpan(1));
+                Global.Cache.Add(userKey, user, TimeSpan.FromDays(1));
             }
 
             if (Global.Cache.Get<Game>(gameKey) == null) {

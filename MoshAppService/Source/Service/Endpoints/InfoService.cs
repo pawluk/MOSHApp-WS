@@ -5,21 +5,9 @@
 
 using System;
 
-using MoshAppService.Service.Response;
 using MoshAppService.Utils;
 
-using ServiceStack.ServiceHost;
-
 namespace MoshAppService.Service.Endpoints {
-    public class InfoResponse : ResponseBase {
-        public long UserId { get; set; }
-        public long TeamId { get; set; }
-        public long GameId { get; set; }
-    }
-
-    [Route("/info")]
-    public class Info { }
-
     public class InfoService : MoshAppServiceBase {
         public object Get(Info request) {
             if (!IsLoggedIn) return UnauthorizedResponse();

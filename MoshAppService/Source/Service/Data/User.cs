@@ -35,6 +35,12 @@ namespace MoshAppService.Service.Data {
         [UsedImplicitly]
         public string Nickname { get; set; }
 
+        [UsedImplicitly]
+        public bool PhoneVisible { get; set; }
+
+        [UsedImplicitly]
+        public bool EmailVisible { get; set; }
+
         #endregion
 
         #region Constructors
