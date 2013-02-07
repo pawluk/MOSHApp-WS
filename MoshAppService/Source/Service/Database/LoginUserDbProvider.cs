@@ -24,14 +24,8 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
+        private const string Query = "CALL GetLoginUser(@user)";
         private static readonly ILog Log = LogManager.GetLogger(typeof(LoginUserDbProvider));
-
-        private const string Query = "SELECT " +
-                                     "users.*, login.login_name, login.login_pass " +
-                                     "FROM " +
-                                     "login INNER JOIN " +
-                                     "users ON login.u_id = users.u_id " +
-                                     "WHERE login.login_name = @user";
 
         public LoginUser this[string username] {
             get {

@@ -19,7 +19,7 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
-        private const string Query = "SELECT * FROM users WHERE u_id = @id";
+        private const string Query = "CALL GetUser(@id)";
 
         public override User this[long id] {
             get {
@@ -38,7 +38,6 @@ namespace MoshAppService.Service.Database {
 
                         reader = cmd.ExecuteReader();
                         var user = BuildObject(reader);
-                        reader.Close();
 
                         return user;
                     } finally {
@@ -52,12 +51,14 @@ namespace MoshAppService.Service.Database {
             if (!reader.Read() || !reader.HasRows) return null;
             return new User {
                 Id = reader.GetInt64("u_id"),
-                Nickname = reader.GetString("u_nicknme"),
+                Nickname = reader.GetString("u_nickname"),
                 FirstName = reader.GetString("u_fname"),
                 LastName = reader.GetString("u_lastname"),
                 Email = reader.GetString("u_email"),
                 Phone = reader.GetString("u_phone"),
-                StudentNumber = reader.GetString("s_num")
+                StudentNumber = reader.GetString("s_num"),
+                PhoneVisible = reader.GetBoolean("p_vsbl_tm"),
+                EmailVisible = reader.GetBoolean("e_vsbl_tm")
             };
         }
     }

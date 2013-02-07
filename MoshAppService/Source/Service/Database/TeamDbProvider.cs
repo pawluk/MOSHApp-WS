@@ -21,29 +21,12 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
-        private static readonly ILog Log = LogManager.GetLogger(typeof(TeamDbProvider));
-
         // Select whole team (given a team ID)
-        private const string SelectQuery = "SELECT " +
-                                           "  teams.*,users.* " +
-                                           "FROM users INNER JOIN " +
-                                           "  team_user ON team_user.u_id = users.u_id " +
-                                           "  INNER JOIN teams ON team_user.t_id = teams.t_id " +
-                                           "WHERE teams.t_id = @id";
+        private const string SelectQuery = "CALL GetTeam(@id)";
 
         // Select whole team (given a team member's user ID)
-        private const string UserSelectQuery = "SELECT " +
-                                               "  users.*, teams.* " +
-                                               "FROM team_user INNER JOIN " +
-                                               "  teams ON team_user.t_id = teams.t_id INNER JOIN " +
-                                               "  users ON team_user.u_id = users.u_id, " +
-                                               "   (SELECT " +
-                                               "    team_user.t_id As TeamId," +
-                                               "    team_user.u_id As UserId " +
-                                               "    FROM team_user) TeamMember " +
-                                               "WHERE " +
-                                               "  TeamMember.TeamId = team_user.t_id AND " +
-                                               "  TeamMember.UserId = @id";
+        private const string UserSelectQuery = "CALL GetTeamWithUser(@id)";
+        private static readonly ILog Log = LogManager.GetLogger(typeof(TeamDbProvider));
 
         public override Team this[long id] {
             get {
@@ -107,7 +90,7 @@ namespace MoshAppService.Service.Database {
             do {
                 team.TeamMembers.Add(new User {
                     Id = reader.GetInt64("u_id"),
-                    Nickname = reader.GetString("u_nicknme"),
+                    Nickname = reader.GetString("u_nickname"),
                     FirstName = reader.GetString("u_fname"),
                     LastName = reader.GetString("u_lastname"),
                     Email = reader.GetString("u_email"),
