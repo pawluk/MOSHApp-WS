@@ -58,8 +58,10 @@ HOST="http://localhost:9000"
 # Curl options
 CURL="curl -v"
 
-JSON_HEADER="Content-Type: application/json"
-FORM_HEADER="Content-Type: application/x-www-form-urlencoded"
+JSON_TYPE="application/json"
+FORM_TYPE="application/x-www-form-urlencoded"
+JSON_HEADER="Content-Type: $JSON_TYPE"
+FORM_HEADER="Content-Type: $FORM_TYPE"
 
 POST="-X POST"
 GET="-X GET"
@@ -107,16 +109,21 @@ entertocontinue
 CURL=curl
 AUTH="-b ss-id=$sessionId"
 
-function do_command {
+do_command() {
   message="$1"
   host="$HOST$2"
   method="$3"
   verbose="$4"
 
   if [[ ! -z "$5" ]]; then
-    data="-d '$5'"
+    data='-d '"$5"''
+    if [[ -z "$6" ]]; then
+        die "Specify mime-type"
+    fi
+    if [[ $6 == "json" ]]; then type=$JSON_HEADER; fi
   else
     data=""
+    type=$FORM_HEADER
   fi
 
   msg="$message\n\nURL: $host\nSession ID: $sessionId"
@@ -132,14 +139,16 @@ function do_command {
   if [[ $verbose == true ]]; then
     # Filter out X-MiniProfiler-Ids header if it exists, as it
     # isn't really needed here and it clutters up the screen :p
-    $CURL -v -X $method $host $AUTH $data 2>&1 | grep -v "X-MiniProfiler-Ids"
+    $CURL -v -X $method $host $AUTH $data -H "$type" 2>&1 | grep -v "X-MiniProfiler-Ids"
   else
-    $CURL -X $method $host $AUTH $data
+    $CURL -X $method $host $AUTH $data -H "$type"
   fi
 
   prompt
 }
 
+# do_command syntax:
+#   do_command <message> <path> <http_method> <verbose> <data> <type>
 do_command "Retrieve user information" "/users/0" "GET"
 do_command "Retrieve team information" "/teams/0" "GET"
 do_command "Retrieve team member information" "/users/1" "GET"
@@ -150,5 +159,5 @@ do_command "Retrieve task information" "/tasks/0" "GET"
 clear
 do_command "Check leaderboard (which will cache it; check the debug output)" "/leaderboard" "GET"
 do_command "Check leaderboard again (which should not regenerate it)" "/leaderboard" "GET"
-do_command "Check in to checkpoint" "/json/oneway/CheckIn" "POST" false '{"gameId":0,"taskId":0,"answer":"String"}'
+do_command "Check in to checkpoint" "/games/0/checkin" "POST" false '{"taskId":1,"answer":"String"}' "json"
 do_command "Check leaderboard (which should have been invalidated by checkin)" "/leaderboard" "GET"
