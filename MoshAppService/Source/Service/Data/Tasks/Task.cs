@@ -4,6 +4,7 @@
 // Author: Jason Recillo
 
 using System;
+using System.Collections.Generic;
 
 using JetBrains.Annotations;
 
@@ -16,9 +17,10 @@ namespace MoshAppService.Service.Data.Tasks {
     public class Task : Entity<Task> {
         #region Properties
 
+        public string Name { get; set; }
         public Campus Campus { get; set; }
-        public Direction Direction { get; set; }
-        public Question Question { get; set; }
+        public List<TaskDict> TaskDict { get; set; }
+        public List<Question> Questions { get; set; }
         public long Previous { get; set; }
 
         #endregion
@@ -26,24 +28,26 @@ namespace MoshAppService.Service.Data.Tasks {
         #region Constructors
 
         public Task()
-            : this(-1, new Campus(), new Direction(), new Question(), -1) { }
+            : this(-1, "", new Campus(), new List<TaskDict>(), new List<Question>(), -1) { }
 
-        public Task(long id, Campus c, Direction d, Question q, long prevId)
+        public Task(long id, string n, Campus c, List<TaskDict> dic, List<Question> q, long prevId)
             : base(id) {
+            Name = n;
             Campus = c;
-            Direction = d;
-            Question = q;
+            TaskDict = dic;
+            Questions = q;
             Previous = prevId;
         }
 
-        public Task(long id, Campus c, Direction d, Question q, Task prev)
-            : this(id, c, d, q, prev != null ? prev.Id : -1) { }
+        public Task(long id, string n, Campus c, List<TaskDict> dic, List<Question> q, Task prev)
+            : this(id, n, c, dic, q, prev != null ? prev.Id : -1) { }
 
         public Task(Task other)
             : this(other.Id,
+                   other.Name,
                    other.Campus,
-                   other.Direction,
-                   other.Question,
+                   other.TaskDict,
+                   other.Questions,
                    other.Previous) { }
 
         #endregion
@@ -52,8 +56,7 @@ namespace MoshAppService.Service.Data.Tasks {
 
         protected override bool _Equals(Task other) {
             return Equals(Campus, other.Campus) &&
-                   Equals(Direction, other.Direction) &&
-                   Equals(Question, other.Question) &&
+                   Equals(TaskDict, other.TaskDict) &&
                    Equals(Previous, other.Previous);
         }
 
@@ -61,9 +64,8 @@ namespace MoshAppService.Service.Data.Tasks {
             unchecked {
                 var hashCode = base.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Campus != null ? Campus.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Direction != null ? Direction.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Question != null ? Question.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Previous != null ? Previous.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (TaskDict != null ? TaskDict.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Previous.GetHashCode());
                 return hashCode;
             }
         }

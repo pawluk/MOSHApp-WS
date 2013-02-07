@@ -120,6 +120,7 @@
     <Compile Include="Source\Service\Database\BaseDbProvider.cs" />
     <Compile Include="Source\Service\Database\DbHelper.cs" />
     <Compile Include="Source\Service\Database\GameDbProvider.cs" />
+    <Compile Include="Source\Service\Database\IDbProvider.cs" />
     <Compile Include="Source\Service\Database\LoginUserDbProvider.cs" />
     <Compile Include="Source\Service\Database\TaskDbProvider.cs" />
     <Compile Include="Source\Service\Database\TeamDbProvider.cs" />
@@ -128,12 +129,17 @@
     <Compile Include="Source\Service\Data\Entity.cs" />
     <Compile Include="Source\Service\Data\Game.cs" />
     <Compile Include="Source\Service\Data\LoginUser.cs" />
+    <Compile Include="Source\Service\Data\Tasks\Answer.cs" />
     <Compile Include="Source\Service\Data\Tasks\Campus.cs" />
-    <Compile Include="Source\Service\Data\Tasks\Direction.cs" />
     <Compile Include="Source\Service\Data\Tasks\Question.cs" />
+    <Compile Include="Source\Service\Data\Tasks\QuestionType.cs" />
+    <Compile Include="Source\Service\Data\Tasks\TaskDict.cs" />
     <Compile Include="Source\Service\Data\Tasks\Task.cs" />
     <Compile Include="Source\Service\Endpoints\GameService.cs" />
+    <Compile Include="Source\Service\Endpoints\Info.cs" />
+    <Compile Include="Source\Service\Endpoints\InfoResponse.cs" />
     <Compile Include="Source\Service\Endpoints\InfoService.cs" />
+    <Compile Include="Source\Service\Endpoints\Leaderboard.cs" />
     <Compile Include="Source\Service\Endpoints\LeaderboardService.cs" />
     <Compile Include="Source\Service\Endpoints\MoshAppServiceBase.cs" />
     <Compile Include="Source\Service\Endpoints\TaskService.cs" />

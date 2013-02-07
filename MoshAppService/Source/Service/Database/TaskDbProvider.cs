@@ -4,7 +4,6 @@
 // Author: Jason Recillo
 
 using System;
-using System.Collections.Generic;
 
 using MoshAppService.Service.Data.Tasks;
 
@@ -20,70 +19,107 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
-        #region Temporary in-memory "Database"
+        private const string Query1 = "SELECT " +
+                                      "  tasks.tsk_id, tasks.tsk_name, " +
+                                      "  campus.c_id, campus.c_name, campus.c_lat, campus.c_lng, " +
+                                      "  dic.td_id, dic.direction, dic.audio, dic.image, dic.td_lat, dic.td_lng " +
+                                      "FROM " +
+                                      "  tasks " +
+                                      "    INNER JOIN campus ON tasks.c_id = campus.c_id " +
+                                      "    INNER JOIN task_dic ON task_dic.tsk_id = tasks.tsk_id " +
+                                      "    INNER JOIN dic ON task_dic.td_id = dic.td_id " +
+                                      "WHERE " +
+                                      "  tasks.tsk_id = @id ";
 
-        internal static readonly Dictionary<long, Task> Tasks = new Dictionary<long, Task> {
-            {
-                0, new Task {
-                    Id = 0,
-                    Campus = new Campus {
-                        Id = 2,
-                        Name = "Casa Loma",
-                        Latitude = 43.676187,
-                        Longitude = -79.410076
-                    },
-                    Direction = new Direction {
-                        Id = 0,
-                        Text = "What is the thing here?",
-                        Latitude = 43.676187,
-                        Longitude = -79.410076
-                    },
-                    Question = new Question {
-                        Id = 0,
-                        CorrectAnswer = "A thing",
-                        Type = QuestionType.Text
-                    },
-                    Previous = -1
-                }
-            }, {
-                1, new Task {
-                    Id = 1,
-                    Campus = new Campus {
-                        Id = 2,
-                        Name = "Casa Loma",
-                        Latitude = 43.676187,
-                        Longitude = -79.410076
-                    },
-                    Direction = new Direction {
-                        Id = 1,
-                        Text = "Go to this place. What do you see?",
-                        Latitude = 43.676187,
-                        Longitude = -79.410076
-                    },
-                    Question = new Question {
-                        Id = 1,
-                        CorrectAnswer = "A thing",
-                        Type = QuestionType.Text
-                    },
-                    Previous = -1
-                }
-            }
-        };
-
-        #endregion
+        private const string Query2 = "SELECT " +
+                                      "  questions.q_id, questions.q_typ_id, questions.q_text " +
+                                      "FROM " +
+                                      "  questions " +
+                                      "    INNER JOIN question_type ON questions.q_typ_id = question_type.q_typ_id " +
+                                      "    INNER JOIN task_question ON task_question.q_id = questions.q_id " +
+                                      "    INNER JOIN tasks ON task_question.tsk_id = tasks.tsk_id " +
+                                      "WHERE " +
+                                      "  tasks.tsk_id = @id ";
 
         public override Task this[long id] {
             get {
-                try {
-                    return Tasks[id];
-                } catch (InvalidOperationException) {
-                    return null;
+                CheckIdIsValid(id);
+
+                MySqlTransaction tx;
+                MySqlDataReader reader = null;
+                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
+                    try {
+                        var cmd = new MySqlCommand {
+                            Connection = conn,
+                            CommandText = Query1
+                        };
+                        cmd.Prepare();
+                        cmd.Parameters.AddWithValue("id", id);
+
+                        reader = cmd.ExecuteReader();
+                        var task = BuildObject(reader);
+                        reader.Close();
+
+                        // Continue building the questions half of the object with a second query.
+                        // No, I don't like this implementation either. ):
+                        // Maybe this could be one of the first major optimizations we could make?
+                        cmd = new MySqlCommand {
+                            Connection = conn,
+                            CommandText = Query2
+                        };
+                        cmd.Prepare();
+                        cmd.Parameters.AddWithValue("id", id);
+
+                        reader = cmd.ExecuteReader();
+                        task = BuildObject2(task, reader);
+
+                        return task;
+                    } finally {
+                        DbHelper.CloseConnectionAndEndTransaction(conn, tx, reader);
+                    }
                 }
             }
         }
 
         protected override Task BuildObject(MySqlDataReader reader) {
-            throw new NotImplementedException();
+            if (!reader.Read()) return null;
+            var task = new Task {
+                Id = reader.GetInt64("tsk_id"),
+                Campus = new Campus {
+                    Id = reader.GetInt64("c_id"),
+                    Name = reader.GetString("c_name"),
+                    Latitude = reader.GetDouble("c_lat"),
+                    Longitude = reader.GetDouble("c_lng")
+                },
+                Name = reader.GetString("tsk_name"),
+            };
+
+            do {
+                task.TaskDict.Add(new TaskDict {
+                    Id = reader.GetInt64("td_id"),
+                    Directions = reader.GetString("direction"),
+                    AudioUrl = reader.GetString("audio"),
+                    ImageUrl = reader.GetString("image"),
+                    Latitude = reader.GetDouble("td_lat"),
+                    Longitude = reader.GetDouble("td_lng")
+                });
+            } while (reader.Read());
+
+            return task;
+        }
+
+        private Task BuildObject2(Task task, MySqlDataReader reader) {
+            if (!reader.Read()) return task;
+
+            do {
+                task.Questions.Add(new Question {
+                    Id = reader.GetInt64("q_id"),
+                    QuestionText = reader.GetString("q_text"),
+                    Type = (QuestionType) reader.GetInt32("q_typ_id")
+                });
+            } while (reader.Read());
+
+            return task;
         }
     }
 }
