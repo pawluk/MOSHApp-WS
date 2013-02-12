@@ -20,7 +20,6 @@ namespace MoshAppService.Service.Data.Tasks {
         public string Name { get; set; }
         public Campus Campus { get; set; }
         public List<TaskDict> TaskDict { get; set; }
-        public List<Question> Questions { get; set; }
         public long Previous { get; set; }
 
         #endregion
@@ -28,26 +27,24 @@ namespace MoshAppService.Service.Data.Tasks {
         #region Constructors
 
         public Task()
-            : this(-1, "", new Campus(), new List<TaskDict>(), new List<Question>(), -1) { }
+            : this(-1, "", new Campus(), new List<TaskDict>(), -1) { }
 
-        public Task(long id, string n, Campus c, List<TaskDict> dic, List<Question> q, long prevId)
+        public Task(long id, string n, Campus c, List<TaskDict> dic, long prevId)
             : base(id) {
             Name = n;
             Campus = c;
             TaskDict = dic;
-            Questions = q;
             Previous = prevId;
         }
 
-        public Task(long id, string n, Campus c, List<TaskDict> dic, List<Question> q, Task prev)
-            : this(id, n, c, dic, q, prev != null ? prev.Id : -1) { }
+        public Task(long id, string n, Campus c, List<TaskDict> dic, Task prev)
+            : this(id, n, c, dic, prev != null ? prev.Id : -1) { }
 
         public Task(Task other)
             : this(other.Id,
                    other.Name,
                    other.Campus,
                    other.TaskDict,
-                   other.Questions,
                    other.Previous) { }
 
         #endregion

@@ -4,6 +4,7 @@
 // Author: Jason Recillo
 
 using System;
+using System.Collections.Generic;
 
 using MoshAppService.Units;
 
@@ -14,6 +15,7 @@ namespace MoshAppService.Service.Data.Tasks {
         public string Directions { get; set; }
         public string AudioUrl { get; set; }
         public string ImageUrl { get; set; }
+        public List<Question> Questions { get; set; }
         public Coordinate Location { get; set; }
 
         #endregion
@@ -21,13 +23,14 @@ namespace MoshAppService.Service.Data.Tasks {
         #region Constructors
 
         public TaskDict()
-            : this(-1, "", "", "", new Coordinate()) { }
+            : this(-1, "", "", "", new List<Question>(), new Coordinate()) { }
 
-        public TaskDict(long id, string d, string a, string i, Coordinate c)
+        public TaskDict(long id, string d, string a, string i,List<Question> q, Coordinate c)
             : base(id) {
             Directions = d;
             AudioUrl = a;
             ImageUrl = i;
+            Questions = q;
             Location = c;
         }
 
@@ -36,6 +39,7 @@ namespace MoshAppService.Service.Data.Tasks {
                    other.Directions,
                    other.AudioUrl,
                    other.ImageUrl,
+                   other.Questions,
                    other.Location) { }
 
         #endregion
