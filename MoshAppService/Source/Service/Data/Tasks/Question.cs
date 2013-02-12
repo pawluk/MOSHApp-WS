@@ -11,7 +11,8 @@ namespace MoshAppService.Service.Data.Tasks {
         public string QuestionText { get; set; }
 
         protected override bool _Equals(Question other) {
-            throw new NotImplementedException();
+            return Type.Equals(other.Type) &&
+                   QuestionText.Equals(other.QuestionText);
         }
     }
 }

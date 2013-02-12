@@ -26,6 +26,7 @@ namespace MoshAppService.Service.Database {
 
         // Select whole team (given a team member's user ID)
         private const string UserSelectQuery = "CALL GetTeamWithUser(@id)";
+
         private static readonly ILog Log = LogManager.GetLogger(typeof(TeamDbProvider));
 
         public override Team this[long id] {

@@ -16,10 +16,11 @@ using ServiceStack.MiniProfiler;
 namespace MoshAppService {
     public class Global : HttpApplication {
         public static ICacheClient Cache;
+        public static ILog Log;
 
         protected void Application_Start(object sender, EventArgs e) {
             LogManager.LogFactory = new NLogFactory();
-            LogManager.GetLogger(typeof(Global)).Info("Application start!");
+            (Log = LogManager.GetLogger(typeof(Global))).Info("Application start!");
             new MoshAppServiceHost().Init();
         }
 

@@ -5,14 +5,29 @@
 
 using System;
 
+using MoshAppService.Utils;
+
 namespace MoshAppService.Units {
     public struct Coordinate {
         public double Latitude;
         public double Longitude;
 
-        public Coordinate(double lat, double lon) {
+        public Coordinate(double lat, double lon)
+            : this() {
             Latitude = lat;
             Longitude = lon;
+        }
+
+        public static Coordinate ParseJson(string json) {
+            var c = json.Split(',');
+            return new Coordinate {
+                Latitude = double.Parse(c[0]),
+                Longitude = double.Parse(c[1])
+            };
+        }
+
+        public override string ToString() {
+            return "{0},{1}".F(Latitude, Longitude);
         }
 
         #region Equality Members
