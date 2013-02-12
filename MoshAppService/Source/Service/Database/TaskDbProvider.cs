@@ -4,6 +4,7 @@
 // Author: Jason Recillo
 
 using System;
+using System.Collections.Generic;
 
 using MoshAppService.Service.Data.Tasks;
 using MoshAppService.Units;
@@ -20,31 +21,39 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
-        private const string Query1 = "SELECT " +
-                                      "  tasks.tsk_id, tasks.tsk_name, " +
-                                      "  campus.c_id, campus.c_name, campus.c_lat, campus.c_lng, " +
-                                      "  dic.td_id, dic.direction, dic.audio, dic.image, dic.td_lat, dic.td_lng " +
-                                      "FROM " +
-                                      "  tasks " +
-                                      "    INNER JOIN campus ON tasks.c_id = campus.c_id " +
-                                      "    INNER JOIN task_dic ON task_dic.tsk_id = tasks.tsk_id " +
-                                      "    INNER JOIN dic ON task_dic.td_id = dic.td_id " +
-                                      "WHERE " +
-                                      "  tasks.tsk_id = @id ";
+        private const string TaskQuery = "SELECT " +
+                                         "  tasks.tsk_id, tasks.tsk_name, tasks.secret_id, " +
+                                         "  game_task.prv_tsk_id, " +
+                                         "  dic.*, " +
+                                         "  campus.* " +
+                                         "FROM " +
+                                         "  tasks " +
+                                         "    INNER JOIN game_task ON game_task.tsk_id = tasks.tsk_id " +
+                                         "    INNER JOIN task_dic ON task_dic.tsk_id = tasks.tsk_id " +
+                                         "    INNER JOIN dic ON task_dic.td_id = dic.td_id " +
+                                         "    INNER JOIN campus ON tasks.c_id = campus.c_id " +
+                                         "WHERE " +
+                                         "  tasks.tsk_id = @taskId AND" +
+                                         "  game_task.g_id = @gameId ";
 
-        private const string Query2 = "SELECT " +
-                                      "  questions.q_id, questions.q_typ_id, questions.q_text " +
-                                      "FROM " +
-                                      "  questions " +
-                                      "    INNER JOIN question_type ON questions.q_typ_id = question_type.q_typ_id " +
-                                      "    INNER JOIN task_question ON task_question.q_id = questions.q_id " +
-                                      "    INNER JOIN tasks ON task_question.tsk_id = tasks.tsk_id " +
-                                      "WHERE " +
-                                      "  tasks.tsk_id = @id ";
+        private const string DictQuery = "SELECT " +
+                                         "  questions.* " +
+                                         "FROM " +
+                                         "  dic " +
+                                         "    INNER JOIN dic_question ON dic_question.td_id = dic.td_id " +
+                                         "    INNER JOIN questions ON dic_question.q_id = questions.q_id " +
+                                         "WHERE " +
+                                         "  dic.td_id = @dictId ";
 
-        public override Task this[long id] {
+        /// <summary>
+        /// Use TaskDbProvider[long taskid, long gameId] instead.
+        /// </summary>
+        [Obsolete]
+        public override Task this[long id] { get { throw new NotSupportedException("Use TaskDbProvider[long taskid, long gameId] instead."); } }
+
+        public Task this[long taskId, long gameId] {
             get {
-                CheckIdIsValid(id);
+                CheckIdIsValid(taskId);
 
                 MySqlTransaction tx;
                 MySqlDataReader reader = null;
@@ -52,28 +61,29 @@ namespace MoshAppService.Service.Database {
                     try {
                         var cmd = new MySqlCommand {
                             Connection = conn,
-                            CommandText = Query1
+                            CommandText = TaskQuery
                         };
                         cmd.Prepare();
-                        cmd.Parameters.AddWithValue("id", id);
+                        cmd.Parameters.AddWithValue("taskId", taskId);
+                        cmd.Parameters.AddWithValue("gameId", gameId);
 
                         reader = cmd.ExecuteReader();
                         var task = BuildObject(reader);
                         reader.Close();
 
-                        // Continue building the questions half of the object with a second query.
-                        // No, I don't like this implementation either. ):
-                        // Maybe this could be one of the first major optimizations we could make?
-                        cmd = new MySqlCommand {
-                            Connection = conn,
-                            CommandText = Query2
-                        };
-                        cmd.Prepare();
-                        cmd.Parameters.AddWithValue("id", id);
+                        // Get all of the questions for each TaskDict
+                        foreach (var dict in task.TaskDict) {
+                            cmd = new MySqlCommand {
+                                Connection = conn,
+                                CommandText = DictQuery
+                            };
+                            cmd.Prepare();
+                            cmd.Parameters.AddWithValue("dictId", dict.Id);
 
-                        reader = cmd.ExecuteReader();
-                        task = BuildObject2(task, reader);
-
+                            reader = cmd.ExecuteReader();
+                            dict.Questions = BuildDictQuestion(reader);
+                            reader.Close();
+                        }
                         return task;
                     } finally {
                         DbHelper.CloseConnectionAndEndTransaction(conn, tx, reader);
@@ -83,6 +93,7 @@ namespace MoshAppService.Service.Database {
         }
 
         protected override Task BuildObject(MySqlDataReader reader) {
+            // Build the first half of the Task object.
             if (!reader.Read()) return null;
             var task = new Task {
                 Id = reader.GetInt64("tsk_id"),
@@ -96,6 +107,9 @@ namespace MoshAppService.Service.Database {
                 },
                 Name = reader.GetString("tsk_name"),
             };
+            // prv_tsk_id may be null, so only set a value here if it exists (default value is -1)
+            if (reader.IsDBNull(reader.GetOrdinal("prv_tsk_id")))
+                task.Previous = reader.GetInt64("prv_tsk_id");
 
             do {
                 task.TaskDict.Add(new TaskDict {
@@ -113,18 +127,21 @@ namespace MoshAppService.Service.Database {
             return task;
         }
 
-        private Task BuildObject2(Task task, MySqlDataReader reader) {
-            if (!reader.Read()) return task;
+        private List<Question> BuildDictQuestion(MySqlDataReader reader) {
+            // Build the second half of the Task object.
+            if (!reader.Read()) return new List<Question>();
+
+            var questions = new List<Question>();
 
             do {
-                task.Questions.Add(new Question {
+                questions.Add(new Question {
                     Id = reader.GetInt64("q_id"),
                     QuestionText = reader.GetString("q_text"),
                     Type = (QuestionType) reader.GetInt32("q_typ_id")
                 });
             } while (reader.Read());
 
-            return task;
+            return questions;
         }
     }
 }
