@@ -6,6 +6,7 @@
 using System;
 
 using MoshAppService.Service.Data.Tasks;
+using MoshAppService.Units;
 
 using MySql.Data.MySqlClient;
 
@@ -88,8 +89,10 @@ namespace MoshAppService.Service.Database {
                 Campus = new Campus {
                     Id = reader.GetInt64("c_id"),
                     Name = reader.GetString("c_name"),
-                    Latitude = reader.GetDouble("c_lat"),
-                    Longitude = reader.GetDouble("c_lng")
+                    Location = new Coordinate {
+                        Latitude = reader.GetDouble("c_lat"),
+                        Longitude = reader.GetDouble("c_lng")
+                    }
                 },
                 Name = reader.GetString("tsk_name"),
             };
@@ -100,8 +103,10 @@ namespace MoshAppService.Service.Database {
                     Directions = reader.GetString("direction"),
                     AudioUrl = reader.GetString("audio"),
                     ImageUrl = reader.GetString("image"),
-                    Latitude = reader.GetDouble("td_lat"),
-                    Longitude = reader.GetDouble("td_lng")
+                    Location = new Coordinate {
+                        Latitude = reader.GetDouble("td_lat"),
+                        Longitude = reader.GetDouble("td_lng")
+                    }
                 });
             } while (reader.Read());
 
