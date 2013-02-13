@@ -49,6 +49,8 @@ namespace MoshAppService.Service.Data {
             // For some reason this was returning false even when the other team's
             // team members are identical to this one, so this workaround will do.
             // The same situation will hold true for GetHashCode() as well.
+            if (TeamMembers.Count != other.TeamMembers.Count) return false;
+
             var x = string.Equals(Name, other.Name);
             x &= string.Equals(ChatId, other.ChatId);
             for (var i = 0; i < TeamMembers.Count; i++)
