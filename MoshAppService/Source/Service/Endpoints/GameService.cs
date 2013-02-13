@@ -23,10 +23,10 @@ namespace MoshAppService.Service.Endpoints {
 
         [PublicAPI]
         public object Get(Game request) {
-            if (request.Id == -1 || !IsLoggedIn) return UnauthorizedResponse();
+            //            if (request.Id == -1 || !IsLoggedIn || request.Id != GameId) return UnauthorizedResponse();
 
             return RequestContext.ToOptimizedResultUsingCache(Cache,
-                                                              "Game" + Session.Id + request.Id,
+                                                              "Game " + request.Id,
                                                               () => GameDbProvider.Instance[request.Id]);
         }
 
@@ -38,6 +38,13 @@ namespace MoshAppService.Service.Endpoints {
             //TODO: Get game from database
             Log.Debug("/games/{1}/checkin:{0}{2}".F(Environment.NewLine, request.GameId, request.Dump()));
             Log.Debug("{0} has checked in".F(Cache.Get<User>("User {0}".F(UserId)).Nickname));
+
+            var key = "Game " + request.GameId;
+            if (Cache.Get<Game>(key) == null)
+                Cache.Set(key, GameDbProvider.Instance[request.GameId]);
+
+            // TODO: Check-in logic here
+
             RequestContext.RemoveFromCache(Cache, "Leaderboard");
             return new HttpResult(null, HttpStatusCode.NoContent);
         }
