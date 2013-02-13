@@ -51,44 +51,54 @@ namespace MoshAppService.Service.Database {
         [Obsolete]
         public override Task this[long id] { get { throw new NotSupportedException("Use TaskDbProvider[long taskid, long gameId] instead."); } }
 
+        internal override Task this[long id, MySqlConnection conn] { get { throw new NotSupportedException(); } }
+
         public Task this[long taskId, long gameId] {
             get {
                 CheckIdIsValid(taskId);
 
                 MySqlTransaction tx;
-                MySqlDataReader reader = null;
                 using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
                     try {
-                        var cmd = new MySqlCommand {
-                            Connection = conn,
-                            CommandText = TaskQuery
-                        };
-                        cmd.Prepare();
-                        cmd.Parameters.AddWithValue("taskId", taskId);
-                        cmd.Parameters.AddWithValue("gameId", gameId);
-
-                        reader = cmd.ExecuteReader();
-                        var task = BuildObject(reader);
-                        reader.Close();
-
-                        // Get all of the questions for each TaskDict
-                        foreach (var dict in task.TaskDict) {
-                            cmd = new MySqlCommand {
-                                Connection = conn,
-                                CommandText = DictQuery
-                            };
-                            cmd.Prepare();
-                            cmd.Parameters.AddWithValue("dictId", dict.Id);
-
-                            reader = cmd.ExecuteReader();
-                            dict.Questions = BuildDictQuestion(reader);
-                            reader.Close();
-                        }
-                        return task;
+                        return this[taskId, gameId, conn];
                     } finally {
-                        DbHelper.CloseConnectionAndEndTransaction(conn, tx, reader);
+                        DbHelper.CloseConnectionAndEndTransaction(conn, tx);
                     }
                 }
+            }
+        }
+
+        private Task this[long taskId, long gameId, MySqlConnection conn] {
+            get {
+                var cmd = new MySqlCommand {
+                    Connection = conn,
+                    CommandText = TaskQuery
+                };
+                cmd.Prepare();
+                cmd.Parameters.AddWithValue("taskId", taskId);
+                cmd.Parameters.AddWithValue("gameId", gameId);
+
+                var reader = cmd.ExecuteReader();
+                var task = BuildObject(reader);
+                reader.Close();
+
+                if (task == null) return null;
+
+                // Get all of the questions for each TaskDict
+                foreach (var dict in task.TaskDict) {
+                    cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = DictQuery
+                    };
+                    cmd.Prepare();
+                    cmd.Parameters.AddWithValue("dictId", dict.Id);
+
+                    reader = cmd.ExecuteReader();
+                    dict.Questions = BuildDictQuestion(reader);
+                    reader.Close();
+                }
+
+                return task;
             }
         }
 
@@ -108,7 +118,7 @@ namespace MoshAppService.Service.Database {
                 Name = reader.GetString("tsk_name"),
             };
             // prv_tsk_id may be null, so only set a value here if it exists (default value is -1)
-            if (reader.IsDBNull(reader.GetOrdinal("prv_tsk_id")))
+            if (!reader.IsDBNull(reader.GetOrdinal("prv_tsk_id")))
                 task.Previous = reader.GetInt64("prv_tsk_id");
 
             do {

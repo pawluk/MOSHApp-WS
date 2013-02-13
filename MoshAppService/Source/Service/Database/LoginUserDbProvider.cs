@@ -32,7 +32,6 @@ namespace MoshAppService.Service.Database {
                 if (username == null) throw new ArgumentNullException("username");
 
                 MySqlTransaction tx;
-                MySqlDataReader reader = null;
                 using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
                     try {
                         var cmd = new MySqlCommand {
@@ -42,14 +41,19 @@ namespace MoshAppService.Service.Database {
                         cmd.Prepare();
                         cmd.Parameters.AddWithValue("user", username);
 
-                        reader = cmd.ExecuteReader();
+                        var reader = cmd.ExecuteReader();
                         var login = BuildObject(reader);
+                        reader.Close();
+
                         return login;
                     } catch (MySqlException e) {
                         Log.Error(e.Message, e);
                         return null;
+                    } catch (Exception e) {
+                        Log.Error(e.Message, e);
+                        throw;
                     } finally {
-                        DbHelper.CloseConnectionAndEndTransaction(conn, tx, reader);
+                        DbHelper.CloseConnectionAndEndTransaction(conn, tx);
                     }
                 }
             }

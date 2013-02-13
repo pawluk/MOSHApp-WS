@@ -21,29 +21,20 @@ namespace MoshAppService.Service.Database {
 
         private const string Query = "CALL GetUser(@id)";
 
-        public override User this[long id] {
+        internal override User this[long id, MySqlConnection conn] {
             get {
-                CheckIdIsValid(id);
+                var cmd = new MySqlCommand {
+                    Connection = conn,
+                    CommandText = Query
+                };
+                cmd.Prepare();
+                cmd.Parameters.AddWithValue("id", id);
 
-                MySqlTransaction tx;
-                MySqlDataReader reader = null;
-                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
-                    try {
-                        var cmd = new MySqlCommand {
-                            Connection = conn,
-                            CommandText = Query
-                        };
-                        cmd.Prepare();
-                        cmd.Parameters.AddWithValue("id", id);
+                var reader = cmd.ExecuteReader();
+                var user = BuildObject(reader);
+                reader.Close();
 
-                        reader = cmd.ExecuteReader();
-                        var user = BuildObject(reader);
-
-                        return user;
-                    } finally {
-                        DbHelper.CloseConnectionAndEndTransaction(conn, tx, reader);
-                    }
-                }
+                return user;
             }
         }
 

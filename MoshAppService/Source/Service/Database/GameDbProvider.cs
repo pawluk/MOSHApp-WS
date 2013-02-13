@@ -5,12 +5,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using MoshAppService.Service.Data;
 using MoshAppService.Service.Data.Tasks;
 
 using MySql.Data.MySqlClient;
+
+using ServiceStack.Common.Extensions;
 
 namespace MoshAppService.Service.Database {
     public class GameDbProvider : BaseDbProvider<Game> {
@@ -22,59 +23,127 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
-        #region Temporary in-memory "Database"
+        private const string QueryBase = "SELECT " +
+                                         "  game.*, " +
+                                         "  team_game.t_id " +
+                                         "FROM " +
+                                         "  game " +
+                                         "    INNER JOIN team_game ON team_game.g_id = game.g_id " +
+                                         "WHERE ";
 
-        private static readonly Dictionary<long, Game> Games = new Dictionary<long, Game> {
-            {
-                0, new Game {
-                    Id = 0,
-                    Team = TeamDbProvider.Instance[0],
-                    Tasks = new HashSet<Task> {
-                        TaskDbProvider.Instance[0],
-                        TaskDbProvider.Instance[1]
-                    },
-                    Start = new DateTime(2013, 2, 1, 10, 0, 0, DateTimeKind.Local),
-                    Finish = new DateTime(2013, 2, 2, 12, 0, 0, DateTimeKind.Local)
-                }
-            }, {
-                1, new Game {
-                    Id = 1,
-                    Team = TeamDbProvider.Instance[1],
-                    Tasks = new HashSet<Task> {
-                        TaskDbProvider.Instance[1],
-                        TaskDbProvider.Instance[0]
-                    },
-                    Start = new DateTime(2013, 2, 1, 10, 0, 0, DateTimeKind.Local),
-                    Finish = new DateTime(2013, 2, 2, 10, 0, 0, DateTimeKind.Local)
-                }
-            }
-        };
+        private const string GameQuery = QueryBase + "game.g_id = @id";
 
-        #endregion
+        private const string TeamQuery = QueryBase + "team_game.t_id = @id";
 
-        public override Game this[long id] {
+        private const string TaskQuery = "SELECT " +
+                                         "  game_task.tsk_id " +
+                                         "FROM " +
+                                         "  game " +
+                                         "    INNER JOIN game_task ON game_task.g_id = game.g_id " +
+                                         "WHERE" +
+                                         "  game.g_id = @id ";
+
+        internal override Game this[long id, MySqlConnection conn] {
             get {
-                CheckIdIsValid(id);
-                try {
-                    return Games[id];
-                } catch (InvalidOperationException) {
-                    return null;
-                }
+                var cmd = new MySqlCommand {
+                    Connection = conn,
+                    CommandText = GameQuery
+                };
+                cmd.Prepare();
+                cmd.Parameters.AddWithValue("id", id);
+
+                var reader = cmd.ExecuteReader();
+                var game = BuildObject(reader);
+                reader.Close();
+
+                if (game == null) return null;
+
+                game.Team.PopulateWith(TeamDbProvider.Instance[game.Team.Id, conn]);
+
+                cmd = new MySqlCommand {
+                    Connection = conn,
+                    CommandText = TaskQuery
+                };
+                cmd.Prepare();
+                cmd.Parameters.AddWithValue("id", id);
+
+                reader = cmd.ExecuteReader();
+                game.Tasks = BuildTasks(reader, game.Id);
+                reader.Close();
+
+                return game;
+            }
+        }
+
+        private Game this[Team team, MySqlConnection conn] {
+            get {
+                var cmd = new MySqlCommand {
+                    Connection = conn,
+                    CommandText = TeamQuery
+                };
+                cmd.Prepare();
+                cmd.Parameters.AddWithValue("id", team.Id);
+
+                var reader = cmd.ExecuteReader();
+                var game = BuildObject(reader);
+                reader.Close();
+
+                if (game == null) return null;
+
+                if (team.IsInitialized) game.Team = team;
+                else game.Team.PopulateWith(TeamDbProvider.Instance[team.Id, conn]);
+
+                cmd = new MySqlCommand {
+                    Connection = conn,
+                    CommandText = TaskQuery
+                };
+                cmd.Prepare();
+                cmd.Parameters.AddWithValue("id", game.Id);
+
+                reader = cmd.ExecuteReader();
+                game.Tasks = BuildTasks(reader, game.Id);
+                reader.Close();
+
+                return game;
             }
         }
 
         public Game this[Team team] {
             get {
-                try {
-                    return team != null ? Games.Single(x => x.Value.Team.Equals(team)).Value : null;
-                } catch (InvalidOperationException) {
-                    return null;
+                MySqlTransaction tx;
+                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
+                    try {
+                        return this[team, conn];
+                    } catch (Exception e) {
+                        Log.Error(e.Message, e);
+                        throw;
+                    } finally {
+                        DbHelper.CloseConnectionAndEndTransaction(conn, tx);
+                    }
                 }
             }
         }
 
         protected override Game BuildObject(MySqlDataReader reader) {
-            throw new NotImplementedException();
+            if (!reader.Read()) return null;
+            // Only initialize the team ID because we are going to get the rest of the object later
+            return new Game {
+                Id = reader.GetInt64("g_id"),
+                Start = reader.GetDateTime("start_time"),
+                Finish = reader.GetDateTime("finis_time"),
+                Team = new Team { Id = reader.GetInt64("t_id") }
+            };
+        }
+
+        private HashSet<Task> BuildTasks(MySqlDataReader reader, long gameId) {
+            var tasks = new HashSet<Task>();
+
+            while (reader.Read()) {
+                var taskId = reader.GetInt64("tsk_id");
+                tasks.Add(TaskDbProvider.Instance[taskId, gameId]);
+            }
+
+            return tasks;
         }
     }
 }

@@ -36,8 +36,7 @@ namespace MoshAppService.Service.Database {
         }
 
         [DebuggerHidden]
-        public static void CloseConnectionAndEndTransaction(MySqlConnection connection, MySqlTransaction transaction, MySqlDataReader reader) {
-            if (reader != null && !reader.IsClosed) reader.Close();
+        public static void CloseConnectionAndEndTransaction(MySqlConnection connection, MySqlTransaction transaction) {
             if (transaction != null) transaction.Commit();
             CloseConnection(connection);
         }

@@ -29,30 +29,20 @@ namespace MoshAppService.Service.Database {
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(TeamDbProvider));
 
-        public override Team this[long id] {
+        internal override Team this[long id, MySqlConnection conn] {
             get {
-                CheckIdIsValid(id);
+                var cmd = new MySqlCommand {
+                    Connection = conn,
+                    CommandText = SelectQuery
+                };
+                cmd.Prepare();
+                cmd.Parameters.AddWithValue("@id", id);
 
-                MySqlTransaction tx;
-                MySqlDataReader reader = null;
-                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
-                    try {
-                        var cmd = new MySqlCommand {
-                            Connection = conn,
-                            CommandText = SelectQuery
-                        };
-                        cmd.Prepare();
-                        cmd.Parameters.AddWithValue("@id", id);
+                var reader = cmd.ExecuteReader();
+                var team = BuildObject(reader);
+                reader.Close();
 
-                        reader = cmd.ExecuteReader();
-                        var team = BuildObject(reader);
-                        reader.Close();
-
-                        return team;
-                    } finally {
-                        DbHelper.CloseConnectionAndEndTransaction(conn, tx, reader);
-                    }
-                }
+                return team;
             }
         }
 
@@ -60,21 +50,22 @@ namespace MoshAppService.Service.Database {
             get {
                 MySqlTransaction tx;
                 using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
-                    var cmd = new MySqlCommand {
-                        Connection = conn,
-                        CommandText = UserSelectQuery
-                    };
-                    cmd.Prepare();
-                    cmd.Parameters.AddWithValue("@id", user.Id);
+                    try {
+                        var cmd = new MySqlCommand {
+                            Connection = conn,
+                            CommandText = UserSelectQuery
+                        };
+                        cmd.Prepare();
+                        cmd.Parameters.AddWithValue("@id", user.Id);
 
-                    var reader = cmd.ExecuteReader();
-                    var team = BuildObject(reader);
+                        var reader = cmd.ExecuteReader();
+                        var team = BuildObject(reader);
+                        reader.Close();
 
-                    reader.Close();
-                    tx.Commit();
-                    conn.Close();
-
-                    return team;
+                        return team;
+                    } finally {
+                        DbHelper.CloseConnectionAndEndTransaction(conn, tx);
+                    }
                 }
             }
         }
