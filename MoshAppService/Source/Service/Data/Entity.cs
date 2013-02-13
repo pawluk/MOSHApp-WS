@@ -4,6 +4,7 @@
 // Author: Jason Recillo
 
 using System;
+using System.Runtime.Serialization;
 
 using ServiceStack.Text;
 
@@ -52,6 +53,9 @@ namespace MoshAppService.Service.Data {
     }
 
     public abstract class Entity<T> : Entity where T : Entity {
+        // Instance of type using no-arg constructor used for checking valid objects
+        private static readonly T InitialValue = (T) Activator.CreateInstance(typeof(T));
+
         #region Constructors
 
         public Entity()
@@ -67,6 +71,23 @@ namespace MoshAppService.Service.Data {
             : this(other.Id) { }
 
         #endregion
+
+        [IgnoreDataMember]
+        public bool IsInitialized {
+            get {
+                // This object's id may already have been set
+                InitialValue.Id = Id;
+
+                // Return false if, after making the ids the same, this object's
+                // other properties match that of the properties of initialValue
+                var equals = !Equals(InitialValue);
+
+                // Reset the initial value's ID back to what it was before
+                InitialValue.Id = -1;
+
+                return equals;
+            }
+        }
 
         #region Equality Members
 
