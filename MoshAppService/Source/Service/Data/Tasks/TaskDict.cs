@@ -28,7 +28,7 @@ namespace MoshAppService.Service.Data.Tasks {
         public TaskDict()
             : this(-1, "", "", "", new List<Question>(), new Coordinate()) { }
 
-        public TaskDict(long id, string d, string a, string i,List<Question> q, Coordinate c)
+        public TaskDict(long id, string d, string a, string i, List<Question> q, Coordinate c)
             : base(id) {
             Directions = d;
             AudioUrl = a;

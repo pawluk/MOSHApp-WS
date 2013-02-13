@@ -17,6 +17,7 @@ using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 
 namespace MoshAppService.Service.Security {
+    //TODO: Logout function
     public class MoshAppAuthProvider : CredentialsAuthProvider {
         #region Possible User Roles
 

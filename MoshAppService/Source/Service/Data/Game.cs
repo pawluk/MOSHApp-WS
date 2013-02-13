@@ -22,7 +22,7 @@ namespace MoshAppService.Service.Data {
         public Team Team { get; set; }
         public DateTime Start { get; set; }
         public DateTime Finish { get; set; }
-        public IEnumerable<Task> Tasks { get; set; }
+        public HashSet<Task> Tasks { get; set; }
 
         #endregion
 
@@ -35,7 +35,7 @@ namespace MoshAppService.Service.Data {
                    DateTime.Now.AddHours(6.0),
                    new HashSet<Task>()) { }
 
-        public Game(long id, Team team, DateTime start, DateTime finish, IEnumerable<Task> tasks)
+        public Game(long id, Team team, DateTime start, DateTime finish, HashSet<Task> tasks)
             : base(id) {
             Team = team;
             Start = start;
