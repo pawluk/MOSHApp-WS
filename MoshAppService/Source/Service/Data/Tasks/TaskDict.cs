@@ -7,12 +7,15 @@ using System;
 using System.Collections.Generic;
 
 using MoshAppService.Units;
+using MoshAppService.Utils;
 
 namespace MoshAppService.Service.Data.Tasks {
     public class TaskDict : Entity<TaskDict> {
+        private string _directions;
+
         #region Properties
 
-        public string Directions { get; set; }
+        public string Directions { get { return _directions; } set { _directions = value.NormalizeSpaces(); } }
         public string AudioUrl { get; set; }
         public string ImageUrl { get; set; }
         public List<Question> Questions { get; set; }
