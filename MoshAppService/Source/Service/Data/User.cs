@@ -4,6 +4,7 @@
 // Author: Jason Recillo
 
 using System;
+using System.Runtime.Serialization;
 
 using JetBrains.Annotations;
 
@@ -35,10 +36,10 @@ namespace MoshAppService.Service.Data {
         [UsedImplicitly]
         public string Nickname { get; set; }
 
-        [UsedImplicitly]
+        [IgnoreDataMember]
         public bool PhoneVisible { get; set; }
 
-        [UsedImplicitly]
+        [IgnoreDataMember]
         public bool EmailVisible { get; set; }
 
         #endregion

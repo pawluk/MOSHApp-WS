@@ -40,17 +40,24 @@ namespace MoshAppService.Service.Database {
 
         protected override User BuildObject(MySqlDataReader reader) {
             if (!reader.Read() || !reader.HasRows) return null;
-            return new User {
+            return MakeUser(reader);
+        }
+
+        internal static User MakeUser(MySqlDataReader reader) {
+            var user = new User {
                 Id = reader.GetInt64("u_id"),
                 Nickname = reader.GetString("u_nickname"),
                 FirstName = reader.GetString("u_fname"),
                 LastName = reader.GetString("u_lastname"),
-                Email = reader.GetString("u_email"),
-                Phone = reader.GetString("u_phone"),
                 StudentNumber = reader.GetString("s_num"),
+                Phone = null,
+                Email = null,
                 PhoneVisible = reader.GetBoolean("p_vsbl_tm"),
                 EmailVisible = reader.GetBoolean("e_vsbl_tm")
             };
+            if (user.PhoneVisible) user.Phone = reader.GetString("u_phone");
+            if (user.EmailVisible) user.Email = reader.GetString("u_email");
+            return user;
         }
     }
 }

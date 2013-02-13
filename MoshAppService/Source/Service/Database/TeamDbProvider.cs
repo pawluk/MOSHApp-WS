@@ -80,15 +80,7 @@ namespace MoshAppService.Service.Database {
             };
 
             do {
-                team.TeamMembers.Add(new User {
-                    Id = reader.GetInt64("u_id"),
-                    Nickname = reader.GetString("u_nickname"),
-                    FirstName = reader.GetString("u_fname"),
-                    LastName = reader.GetString("u_lastname"),
-                    Email = reader.GetString("u_email"),
-                    Phone = reader.GetString("u_phone"),
-                    StudentNumber = reader.GetString("s_num")
-                });
+                team.TeamMembers.Add(UserDbProvider.MakeUser(reader));
             } while (reader.Read());
 
             return team;
