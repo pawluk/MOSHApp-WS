@@ -11,7 +11,7 @@ using MoshAppService.Service.Data.Tasks;
 
 using MySql.Data.MySqlClient;
 
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 
 namespace MoshAppService.Service.Database {
     public class GameDbProvider : BaseDbProvider<Game> {
