@@ -117,3 +117,4 @@ Thumbs.db
 obj/
 [Rr]elease*/
 _ReSharper*/
+packages/
