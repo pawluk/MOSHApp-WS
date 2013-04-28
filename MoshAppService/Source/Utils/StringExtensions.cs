@@ -4,7 +4,9 @@
 // Author: Jason Recillo
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 using JetBrains.Annotations;
@@ -34,6 +36,22 @@ namespace MoshAppService.Utils {
         [DebuggerHidden]
         public static bool IsNotNullOrEmpty(this string input) {
             return !string.IsNullOrEmpty(input);
+        }
+
+        [DebuggerHidden]
+        public static bool ContainsAny(this IEnumerable<string> strs, bool caseSensitive, params string[] strsToCheck) {
+            if (strsToCheck == null || strsToCheck.Empty()) throw new ArgumentNullException("strsToCheck");
+            return caseSensitive ?
+                       strsToCheck.Any(strs.Contains) :
+                       strsToCheck.Any(str => strs.Select(x => x.ToLower()).Contains(str.ToLower()));
+        }
+
+        [DebuggerHidden]
+        public static bool ContainsAll(this IEnumerable<string> strs, bool caseSensitive, params string[] strsToCheck) {
+            if (strsToCheck == null || strsToCheck.Empty()) throw new ArgumentNullException("strsToCheck");
+            return caseSensitive ?
+                       strsToCheck.All(strs.Contains) :
+                       strsToCheck.Any(str => strs.Select(x => x.ToLower()).Contains(str.ToLower()));
         }
     }
 }
