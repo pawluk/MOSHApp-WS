@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using MoshAppService.Service.Data;
+using MoshAppService.Utils;
 
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
@@ -30,23 +31,42 @@ namespace MoshAppService.Service.Endpoints {
             }
 
             // Try and process the data as CSV
-            List<User> x;
+            List<User> users;
             try {
-                x = JsonSerializer.DeserializeFromString<List<User>>(CsvToJson(data));
+                users = JsonSerializer.DeserializeFromString<List<User>>(CsvToJson(data));
             } catch (InvalidDataException) {
                 try {
                     // It's not a CSV file. Let's try to process it as JSON
-                    x = JsonSerializer.DeserializeFromString<List<User>>(data);
+                    users = JsonSerializer.DeserializeFromString<List<User>>(data);
                 } catch (SerializationException) {
                     // This isn't a JSON file either. Let's bail out.
                     return new HttpError(HttpStatusCode.BadRequest, "");
                 }
             }
-            Global.Log.Debug(x.Dump());
+            Global.Log.Debug(users.Dump());
 
             //TODO: Save the user data to the database
 
-            return x;
+            var output = new Dictionary<string, string>(); // will contain generated Username/Password pairs
+            foreach (var u in users) {
+                string username, password;
+                GenerateUserCredentials(u, out username, out password);
+                output.Add(username, password);
+            }
+
+            return output;
+        }
+
+        private static void GenerateUserCredentials(User user, out string username, out string password, int length = 6) {
+            username = "{0}{1}".Fmt(user.FirstName.Substring(0, 1), user.LastName).ToLower();
+            
+            // Generate random password
+            var characters = "1234567890abcdefghjkmnpqrstuvwxyzACDEFGHJKLMNPQRSTUVWXYZ".ToCharArray();
+            var pb = new StringBuilder(length);
+            for (var i = 0; i < length; i++) {
+                pb.Append(characters.GetRandom());
+            }
+            password = pb.ToString();
         }
 
         // slightly modified from
