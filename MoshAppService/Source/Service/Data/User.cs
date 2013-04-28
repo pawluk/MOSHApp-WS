@@ -4,6 +4,7 @@
 // Author: Jason Recillo
 
 using System;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 using JetBrains.Annotations;
@@ -46,9 +47,11 @@ namespace MoshAppService.Service.Data {
 
         #region Constructors
 
+        [DebuggerHidden]
         public User()
             : this(-1, "", "", "", "", "", "") { }
 
+        [DebuggerHidden]
         public User(long id, string nickname, string firstName, string lastName, string email, string phone, string studentNumber) {
             Id = id;
             Nickname = nickname;
@@ -59,6 +62,7 @@ namespace MoshAppService.Service.Data {
             StudentNumber = studentNumber;
         }
 
+        [DebuggerHidden]
         public User(User user)
             : this(user.Id,
                    user.Nickname,

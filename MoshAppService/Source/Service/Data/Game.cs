@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 using JetBrains.Annotations;
 
@@ -28,6 +29,7 @@ namespace MoshAppService.Service.Data {
 
         #region Constructors
 
+        [DebuggerHidden]
         public Game()
             : this(-1,
                    new Team(),
@@ -35,6 +37,7 @@ namespace MoshAppService.Service.Data {
                    DateTime.Now.AddHours(6.0),
                    new HashSet<Task>()) { }
 
+        [DebuggerHidden]
         public Game(long id, Team team, DateTime start, DateTime finish, HashSet<Task> tasks)
             : base(id) {
             Team = team;
@@ -43,6 +46,7 @@ namespace MoshAppService.Service.Data {
             Tasks = tasks;
         }
 
+        [DebuggerHidden]
         public Game(Game other)
             : this(other.Id,
                    other.Team,

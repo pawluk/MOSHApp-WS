@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 using JetBrains.Annotations;
@@ -27,15 +28,18 @@ namespace MoshAppService.Service.Data {
 
         #region Constructors
 
+        [DebuggerHidden]
         public Team()
             : this(-1, "", new List<User>()) { }
 
+        [DebuggerHidden]
         public Team(long id, string name, List<User> members)
             : base(id) {
             Name = name;
             TeamMembers = members;
         }
 
+        [DebuggerHidden]
         public Team(Team other)
             : this(other.Id,
                    other.Name,

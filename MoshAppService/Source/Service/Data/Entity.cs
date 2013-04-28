@@ -4,6 +4,7 @@
 // Author: Jason Recillo
 
 using System;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 using ServiceStack.Text;
@@ -18,13 +19,16 @@ namespace MoshAppService.Service.Data {
 
         #region Constructors
 
+        [DebuggerHidden]
         public Entity()
             : this(-1) { }
 
+        [DebuggerHidden]
         public Entity(long id) {
             Id = id;
         }
 
+        [DebuggerHidden]
         public Entity(Entity other)
             : this(other.Id) { }
 
@@ -58,15 +62,19 @@ namespace MoshAppService.Service.Data {
 
         #region Constructors
 
+        [DebuggerHidden]
         public Entity()
             : this(-1) { }
 
+        [DebuggerHidden]
         public Entity(long id)
             : base(id) { }
 
+        [DebuggerHidden]
         public Entity(T other)
             : this((Entity) other) { }
 
+        [DebuggerHidden]
         public Entity(Entity other)
             : this(other.Id) { }
 

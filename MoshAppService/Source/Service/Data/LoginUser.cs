@@ -4,14 +4,17 @@
 // Author: Jason Recillo
 
 using System;
+using System.Diagnostics;
 
 using JetBrains.Annotations;
 
 namespace MoshAppService.Service.Data {
     public class LoginUser : User {
+        [DebuggerHidden]
         public LoginUser()
             : this(new User()) { }
 
+        [DebuggerHidden]
         public LoginUser(User user, string pass = "")
             : base(user) {
             Password = pass;
