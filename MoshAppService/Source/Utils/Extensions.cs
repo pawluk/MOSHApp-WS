@@ -8,5 +8,9 @@ namespace MoshAppService.Utils {
             var idx = Random.Next(0, items.Count - 1);
             return items[idx];
         }
+
+        public static bool Empty<T>(this IList<T> arr) {
+            return arr.Count == 0;
+        }
     }
 }
