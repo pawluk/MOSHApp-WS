@@ -1,11 +1,19 @@
-﻿using System;
+﻿// Project: MoshAppService
+// Filename: DataUploadService.cs
+// 
+// Author: Jason Recillo
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
+
+using JetBrains.Annotations;
 
 using MoshAppService.Service.Data;
 using MoshAppService.Utils;
@@ -16,34 +24,66 @@ using ServiceStack.Text;
 
 namespace MoshAppService.Service.Endpoints {
     [Route("/upload", "POST")]
-    public class DataUpload {
-        public string Name { get; set; }
-        public string TextContents { get; set; }
-    }
+    public class DataUpload { }
 
+    /// <summary>
+    /// Processes uploaded CSV and JSON files and adds the user information to the database.
+    /// </summary>
     public class DataUploadService : ServiceStack.ServiceInterface.Service {
-        public object Post(DataUpload request) {
+        private DateTime _start;
+
+        public object Post(DataUpload unused) {
+            _start = DateTime.Now;
             if (RequestContext.Files.Length == 0) return new HttpResult(HttpStatusCode.BadRequest, "No file was uploaded.");
             var file = RequestContext.Files[0];
             string data;
-            using (var reader = new StreamReader(file.InputStream)) {
+            using (var reader = new StreamReader(file.InputStream))
                 data = reader.ReadToEnd();
-            }
 
             // Try and process the data as CSV
             List<User> users;
             try {
-                users = JsonSerializer.DeserializeFromString<List<User>>(CsvToJson(data));
+                Log("CSV Deserialize");
+                var tmp = JsonSerializer.DeserializeFromString<List<Dictionary<string, string>>>(CsvToJson(data));
+
+                // The above line executed successfully? Great! Now reassign the data variable
+                // to contain the JSON version of its contents and then throw an InvalidDataException
+                // to execute the validation code below
+                Log("CSV Deserialize success");
+                data = tmp.ToJson();
+                throw new InvalidDataException();
             } catch (InvalidDataException) {
                 try {
+                    Log("JSON Deserialize");
                     // It's not a CSV file. Let's try to process it as JSON
+
+                    // First of all, make sure that there aren't any unexpected fields
+                    // Start by converting the data from JSON into a string Dictionary
+                    var check = JsonSerializer.DeserializeFromString<List<Dictionary<string, string>>>(data);
+
+                    // Don't hardcode any fields here, in case we change any fields in the User class.
+                    // instead, convert a plain User object into a Dictionary<string, string>, and compare all keys
+                    var testusr = JsonSerializer.DeserializeFromString<Dictionary<string, string>>(new User().ToJson());
+
+                    // data will be invalid if any of the keys in `check` are not in the `testusr` keys.
+                    // At the very least however, first name, last name, and student ID are required
+                    Log("Check valid");
+                    var valid = check.Aggregate(true, (current, ch) => current &
+                                                                       ch.Keys.ContainsAny(false, testusr.Keys.ToArray()) &
+                                                                       ch.Keys.ContainsAll(false, "firstName", "lastName", "studentNumber"));
+                    Log("Check valid complete: {0}", valid);
+                    if (!valid) throw new SerializationException();
+
+                    Log("JSON Deserialize success");
+
                     users = JsonSerializer.DeserializeFromString<List<User>>(data);
                 } catch (SerializationException) {
+                    Log("Invalid input");
                     // This isn't a JSON file either. Let's bail out.
                     return new HttpError(HttpStatusCode.BadRequest, "");
                 }
             }
-            Global.Log.Debug(users.Dump());
+            Log(users.Dump());
 
             //TODO: Save the user data to the database
 
@@ -54,23 +94,48 @@ namespace MoshAppService.Service.Endpoints {
                 output.Add(username, password);
             }
 
+            Log(output.Dump());
+
             return output;
         }
 
-        private static void GenerateUserCredentials(User user, out string username, out string password, int length = 6) {
-            username = "{0}{1}".Fmt(user.FirstName.Substring(0, 1), user.LastName).ToLower();
-            
-            // Generate random password
-            var characters = "1234567890abcdefghjkmnpqrstuvwxyzACDEFGHJKLMNPQRSTUVWXYZ".ToCharArray();
+        private static int _tempCount;
+
+        private static bool UsernameExistsInDatabase(string username) {
+            // TODO: Check the database to ensure that this username is available
+
+            return _tempCount++ <= 5;
+        }
+
+        private static string GenerateUsername(User user, string suffix = "") {
+            return "{0}{1}{2}".Fmt(user.FirstName.Substring(0, 1), user.LastName, suffix).ToLower();
+        }
+
+        private static readonly char[] PasswordCharacters = "1234567890abcdefghjkmnpqrstuvwxyzACDEFGHJKLMNPQRSTUVWXYZ".ToCharArray();
+
+        private static string GeneratePassword(int length) {
             var pb = new StringBuilder(length);
-            for (var i = 0; i < length; i++) {
-                pb.Append(characters.GetRandom());
-            }
-            password = pb.ToString();
+            for (var i = 0; i < length; i++)
+                pb.Append(PasswordCharacters.GetRandom());
+            return pb.ToString();
+        }
+
+        private static void GenerateUserCredentials(User user, out string username, out string password, int length = 6) {
+            username = GenerateUsername(user);
+            _tempCount = 0;
+            // Ensure that the username we generate for the new user is completely unique
+            var count = 1;
+            while (UsernameExistsInDatabase(username))
+                username = GenerateUsername(user, "{0}".Fmt(count++));
+
+            password = GeneratePassword(length);
         }
 
         // slightly modified from
         // http://stackoverflow.com/questions/10824165/converting-a-csv-file-to-json-using-c-sharp
+        // ServiceStack doesn't have a working implementation for converting CSV to JSON
+        // (CsvSerializer's Serialize/Deserialize methods throw NotImplementedException),
+        // so we have to do it ourselves
         private static string CsvToJson(string value) {
             if (value == null) return null;
             var lines = value.Split(new[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
@@ -82,11 +147,11 @@ namespace MoshAppService.Service.Endpoints {
             sb.Append("[");
             for (var i = 1; i < lines.Length; i++) {
                 var fields = lines[i].Split(new[] { ',' }, StringSplitOptions.None);
-                if(fields.Length!=headers.Length)throw new InvalidDataException("Field count must match header count.");
+                if (fields.Length != headers.Length) throw new InvalidDataException("Field count must match header count.");
                 var jsonElements = headers.Zip(fields, (header, field) => {
                     var h = header.Replace("\"", "\\\"");
                     var f = field.Replace("\"", "\\\"");
-                    return "\"{0}\": \"{1}\"".Fmt(h, f);
+                    return "\"{0}\":\"{1}\"".Fmt(h, f);
                 }).ToArray();
                 var jsonObject = "{" + "{0}".Fmt(string.Join(",", jsonElements)) + "}";
                 if (i < lines.Length - 1) jsonObject += ",";
@@ -94,6 +159,15 @@ namespace MoshAppService.Service.Endpoints {
             }
             sb.Append("]");
             return sb.ToString();
+        }
+
+        [DebuggerHidden]
+        [StringFormatMethod("message")]
+        private void Log(string message, params object[] args) {
+#if DEBUG
+            var m = args != null && !args.Empty() ? message.Fmt(args) : message;
+            Global.Log.Debug("[{0} ms]: {1}".Fmt((DateTime.Now - _start).TotalMilliseconds, m));
+#endif
         }
     }
 }
