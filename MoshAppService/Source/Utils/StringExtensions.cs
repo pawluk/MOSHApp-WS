@@ -4,6 +4,7 @@
 // Author: Jason Recillo
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,7 +14,9 @@ using JetBrains.Annotations;
 
 namespace MoshAppService.Utils {
     public static class StringExtensions {
-        [DebuggerHidden, NotNull, StringFormatMethod("str")]
+        [NotNull]
+        [DebuggerHidden]
+        [StringFormatMethod("str")]
         public static string F([NotNull] this string str, [NotNull] params object[] args) {
             return String.Format(str, args);
         }

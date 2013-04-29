@@ -4,6 +4,9 @@
 // Author: Jason Recillo
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 using JetBrains.Annotations;
 
@@ -16,7 +19,8 @@ using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 
 namespace MoshAppService.Service.Endpoints {
-    [PublicAPI, Authenticate]
+    [PublicAPI]
+    [Authenticate]
     public class TeamService : MoshAppServiceBase {
         private static readonly ILog Log = LogManager.GetLogger(typeof(TeamService));
 

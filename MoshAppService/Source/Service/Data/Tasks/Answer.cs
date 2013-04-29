@@ -4,6 +4,9 @@
 // Author: Jason Recillo
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MoshAppService.Service.Data.Tasks {
     // TODO: Question. Does this object ever leave the web service, or is it just used internally to verify correct answers and the like?
