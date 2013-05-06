@@ -61,5 +61,9 @@ namespace MoshAppService.Service.Endpoints {
         protected HttpResult OkResponse() {
             return new HttpResult(null, HttpStatusCode.OK);
         }
+
+        protected HttpResult NoContentResponse() {
+            return new HttpResult(null, HttpStatusCode.NoContent);
+        }
     }
 }

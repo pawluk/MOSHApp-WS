@@ -16,6 +16,7 @@ using MoshAppService.Service.Database;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.Text;
 
 namespace MoshAppService.Service.Endpoints {
     [PublicAPI]
@@ -33,6 +34,26 @@ namespace MoshAppService.Service.Endpoints {
             return RequestContext.ToOptimizedResultUsingCache(Cache,
                                                               "User" + Session.Id + request.Id,
                                                               () => UserDbProvider.Instance[request.Id]);
+        }
+
+        public object Get(UserOptions request) {
+            if (request.UserId == -1 || !IsLoggedIn) return UnauthorizedResponse();
+
+            var currentUser = UserDbProvider.Instance[UserId];
+            request.UserId = UserId;
+            request.PhoneVisible = currentUser.PhoneVisible;
+            request.EmailVisible = currentUser.EmailVisible;
+
+            return request;
+        }
+
+        public object Post(UserOptions request) {
+            if (request.UserId == -1 || !IsLoggedIn) return UnauthorizedResponse();
+            Log.Debug(request.Dump());
+
+            UserDbProvider.Instance.UpdateUserOptions(request);
+
+            return NoContentResponse();
         }
     }
 }

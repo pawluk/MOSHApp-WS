@@ -107,4 +107,18 @@ namespace MoshAppService.Service.Data {
             return u == null ? null : new User().PopulateWith(u);
         }
     }
+
+    [PublicAPI]
+    [Route("/users/{UserId}/options")]
+    public class UserOptions {
+        public long UserId { get; set; }
+        public bool EmailVisible { get; set; }
+        public bool PhoneVisible { get; set; }
+
+        public UserOptions() {
+            UserId = -1;
+            EmailVisible = true;
+            PhoneVisible = true;
+        }
+    }
 }

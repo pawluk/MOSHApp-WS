@@ -6,6 +6,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 using MoshAppService.Service.Data;
@@ -61,6 +62,36 @@ namespace MoshAppService.Service.Database {
             if (user.PhoneVisible) user.Phone = reader.GetString("u_phone");
             if (user.EmailVisible) user.Email = reader.GetString("u_email");
             return user;
+        }
+
+        public void UpdateUserOptions(UserOptions opts) {
+            MySqlTransaction tx = null;
+            try {
+                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "UpdateUserOption",
+                        CommandType = CommandType.StoredProcedure,
+                    };
+                    cmd.Parameters.AddWithValue("UserId", opts.UserId);
+                    cmd.Parameters.AddWithValue("PhoneVisible", opts.PhoneVisible);
+                    cmd.Parameters.AddWithValue("EmailVisible", opts.EmailVisible);
+
+                    var rows = cmd.ExecuteNonQuery();
+
+                    if (rows == 0) throw new ApplicationException("Error updating user options. Try again later.");
+
+                    tx.Commit();
+                }
+            } catch (Exception e) {
+                if (tx != null) {
+                    try {
+                        tx.Rollback();
+                    } catch (InvalidOperationException ignored) { }
+                }
+                Log.Error(e.Message, e);
+                throw;
+            }
         }
     }
 }
