@@ -29,16 +29,15 @@ namespace MoshAppService.Service.Database {
 
         #endregion
 
-        private const string Query = "CALL GetUser(@id)";
-
         internal override User this[long id, MySqlConnection conn] {
             get {
                 var cmd = new MySqlCommand {
                     Connection = conn,
-                    CommandText = Query
+                    CommandText = "GetUser",
+                    CommandType = CommandType.StoredProcedure,
                 };
                 cmd.Prepare();
-                cmd.Parameters.AddWithValue("id", id);
+                cmd.Parameters.AddWithValue("UserId", id);
 
                 var reader = cmd.ExecuteReader();
                 var user = BuildObject(reader);
