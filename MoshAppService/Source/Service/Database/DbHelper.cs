@@ -43,5 +43,10 @@ namespace MoshAppService.Service.Database {
             if (transaction != null) transaction.Commit();
             CloseConnection(connection);
         }
+
+        [DebuggerHidden]
+        public static bool IsDBNull(this MySqlDataReader reader, string column) {
+            return reader.IsDBNull(reader.GetOrdinal(column));
+        }
     }
 }
