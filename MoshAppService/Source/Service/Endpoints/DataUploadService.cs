@@ -16,6 +16,7 @@ using System.Text;
 using JetBrains.Annotations;
 
 using MoshAppService.Service.Data;
+using MoshAppService.Service.Database;
 using MoshAppService.Utils;
 
 using ServiceStack.Common.Web;
@@ -33,6 +34,8 @@ namespace MoshAppService.Service.Endpoints {
         private DateTime _start;
 
         public object Post(DataUpload unused) {
+            //TODO: Only administrators should be able to do this
+
             _start = DateTime.Now;
             if (RequestContext.Files.Length == 0) return new HttpResult(HttpStatusCode.BadRequest, "No file was uploaded.");
             var file = RequestContext.Files[0];
@@ -86,49 +89,16 @@ namespace MoshAppService.Service.Endpoints {
             Log(users.Dump());
 
             //TODO: Save the user data to the database
-
-            var output = new Dictionary<string, string>(); // will contain generated Username/Password pairs
+            var output = new List<dynamic>();
             foreach (var u in users) {
-                string username, password;
-                GenerateUserCredentials(u, out username, out password);
-                output.Add(username, password);
+                dynamic credentials;
+                UserDbProvider.Instance.CreateUser(u, out credentials);
+                output.Add(credentials);
             }
-
             Log(output.Dump());
 
+            // Return a list of all of the login names and passwords
             return output;
-        }
-
-        private static int _tempCount;
-
-        private static bool UsernameExistsInDatabase(string username) {
-            // TODO: Check the database to ensure that this username is available
-
-            return _tempCount++ <= 5;
-        }
-
-        private static string GenerateUsername(User user, string suffix = "") {
-            return "{0}{1}{2}".Fmt(user.FirstName.Substring(0, 1), user.LastName, suffix).ToLower();
-        }
-
-        private static readonly char[] PasswordCharacters = "1234567890abcdefghjkmnpqrstuvwxyzACDEFGHJKLMNPQRSTUVWXYZ".ToCharArray();
-
-        private static string GeneratePassword(int length) {
-            var pb = new StringBuilder(length);
-            for (var i = 0; i < length; i++)
-                pb.Append(PasswordCharacters.GetRandom());
-            return pb.ToString();
-        }
-
-        private static void GenerateUserCredentials(User user, out string username, out string password, int length = 6) {
-            username = GenerateUsername(user);
-            _tempCount = 0;
-            // Ensure that the username we generate for the new user is completely unique
-            var count = 1;
-            while (UsernameExistsInDatabase(username))
-                username = GenerateUsername(user, "{0}".Fmt(count++));
-
-            password = GeneratePassword(length);
         }
 
         // slightly modified from

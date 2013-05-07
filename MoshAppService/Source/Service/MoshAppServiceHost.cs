@@ -58,6 +58,9 @@ namespace MoshAppService.Service {
             // Set dates to serialize to ISO-8601 dates
             JsConfig.DateHandler = JsonDateHandler.ISO8601;
 
+            // Don't serialize type information
+            JsConfig.ExcludeTypeInfo = true;
+
             // Set up authentication service
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] { new MoshAppAuthProvider() }) {
                 ServiceRoutes = new Dictionary<Type, string[]> {

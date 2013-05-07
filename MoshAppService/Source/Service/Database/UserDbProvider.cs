@@ -7,11 +7,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 using MoshAppService.Service.Data;
+using MoshAppService.Service.Security;
+using MoshAppService.Utils;
 
 using MySql.Data.MySqlClient;
+
+using ServiceStack.Text;
 
 namespace MoshAppService.Service.Database {
     public class UserDbProvider : BaseDbProvider<User> {
@@ -93,5 +99,111 @@ namespace MoshAppService.Service.Database {
                 throw;
             }
         }
+
+        #region User Creation
+
+        private static readonly char[] PasswordCharacters = "1234567890abcdefghjkmnpqrstuvwxyzACDEFGHJKLMNPQRSTUVWXYZ".ToCharArray();
+
+        public void CreateUser(User obj, out dynamic credentials) {
+            MySqlTransaction tx = null;
+            try {
+                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "CreateUser",
+                        CommandType = CommandType.StoredProcedure,
+                    };
+                    cmd.Parameters.AddWithValue("FirstName", obj.FirstName);
+                    cmd.Parameters.AddWithValue("LastName", obj.LastName);
+                    cmd.Parameters.AddWithValue("StudentNumber", obj.StudentNumber);
+                    cmd.Parameters.AddWithValue("Phone", obj.Phone.IsNullOrEmpty() ? null : obj.Phone);
+                    cmd.Parameters.AddWithValue("Email", obj.Email.IsNullOrEmpty() ? null : obj.Email); // Workaround to allow empty values when emails must be unique
+                    cmd.Parameters.Add(new MySqlParameter {
+                        ParameterName = "UserId",
+                        Direction = ParameterDirection.Output,
+                        MySqlDbType = MySqlDbType.Int32,
+                    });
+
+                    var rows = cmd.ExecuteNonQuery();
+                    var userid = Convert.ToInt32(cmd.Parameters["UserId"].Value ?? -1);
+                    if (rows == 0 || userid == -1) throw new ApplicationException("Could not create new user.");
+
+                    string loginName, password;
+                    GenerateUserCredentials(obj, out loginName, out password);
+
+                    cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "CreateLoginUser",
+                        CommandType = CommandType.StoredProcedure,
+                    };
+                    cmd.Parameters.AddWithValue("UserId", userid);
+                    cmd.Parameters.AddWithValue("LoginName", loginName);
+                    cmd.Parameters.AddWithValue("Password", PasswordHelper.EncryptPassword(password));
+
+                    rows = cmd.ExecuteNonQuery();
+                    if (rows == 0) throw new ApplicationException("Could not create new user credentials.");
+
+                    tx.Commit();
+                    credentials = new {
+                        loginName,
+                        password
+                    };
+                }
+            } catch (Exception e) {
+                if (tx != null) {
+                    try {
+                        tx.Rollback();
+                    } catch (InvalidOperationException) { }
+                }
+                Log.Error(e.Message, e);
+                throw;
+            }
+        }
+
+        [DebuggerHidden]
+        private static bool IsLoginNameAvailable(string loginName) {
+            try {
+                using (var conn = DbHelper.OpenConnection()) {
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "SELECT CheckLoginNameAvailable(@LoginName)",
+                    };
+                    cmd.Parameters.AddWithValue("LoginName", loginName);
+
+                    var result = cmd.ExecuteScalar();
+
+                    return Convert.ToBoolean(result ?? false);
+                }
+            } catch (Exception e) {
+                Log.Error(e.Message, e);
+                throw;
+            }
+        }
+
+        [DebuggerHidden]
+        private static string GenerateUsername(User user, string suffix = "") {
+            return "{0}{1}{2}".Fmt(user.FirstName.Substring(0, 1), user.LastName, suffix).ToLower();
+        }
+
+        [DebuggerHidden]
+        private static string GeneratePassword(int length) {
+            var pb = new StringBuilder(length);
+            for (var i = 0; i < length; i++)
+                pb.Append(PasswordCharacters.GetRandom());
+            return pb.ToString();
+        }
+
+        [DebuggerHidden]
+        private static void GenerateUserCredentials(User user, out string username, out string password, int length = 6) {
+            username = GenerateUsername(user);
+            // Ensure that the username we generate for the new user is completely unique
+            var count = 1;
+            while (!IsLoginNameAvailable(username))
+                username = GenerateUsername(user, "{0}".Fmt(count++));
+
+            password = GeneratePassword(length);
+        }
+
+        #endregion
     }
 }
