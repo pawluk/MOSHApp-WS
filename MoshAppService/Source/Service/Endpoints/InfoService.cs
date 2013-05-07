@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+using MoshAppService.Service.Data;
 using MoshAppService.Utils;
 
 namespace MoshAppService.Service.Endpoints {
@@ -19,6 +20,7 @@ namespace MoshAppService.Service.Endpoints {
                 UserId = Convert.ToInt64(Session.GetRole("User").Substring(4)),
                 TeamId = Convert.ToInt64(Session.GetRole("Team").Substring(4)),
                 GameId = Convert.ToInt64(Session.GetRole("Game").Substring(4)),
+                User = Global.Cache.Get<User>(Session.GetRole("User")),
             };
         }
     }

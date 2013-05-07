@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+using MoshAppService.Service.Data;
 using MoshAppService.Service.Response;
 
 namespace MoshAppService.Service.Endpoints {
@@ -15,5 +16,6 @@ namespace MoshAppService.Service.Endpoints {
         public long UserId { get; set; }
         public long TeamId { get; set; }
         public long GameId { get; set; }
+        public User User { get; set; }
     }
 }
