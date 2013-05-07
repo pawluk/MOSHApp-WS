@@ -22,8 +22,10 @@ using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.ServiceInterface.Cors;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace MoshAppService.Service {
     [PublicAPI]
@@ -68,6 +70,13 @@ namespace MoshAppService.Service {
                 },
                 HtmlRedirect = null,
                 IncludeAssignRoleServices = false,
+            });
+
+            // Enable CORS (Cross-Origin Resource Sharing)
+            // http://stackoverflow.com/questions/8211930/servicestack-rest-api-and-cors
+            Plugins.Add(new CorsFeature());
+            PreRequestFilters.Add((req, res) => {
+                if (req.HttpMethod == "OPTIONS") res.EndServiceStackRequest();
             });
 
             container.Register((Global.Cache = new MemoryCacheClient()));
