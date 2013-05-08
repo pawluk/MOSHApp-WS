@@ -75,4 +75,8 @@ namespace MoshAppService.Service.Data {
 
         #endregion
     }
+
+    [PublicAPI]
+    [Route("/teams/contact")]
+    public class TeamContact { }
 }
