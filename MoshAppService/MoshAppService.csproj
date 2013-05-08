@@ -162,7 +162,7 @@
     <Compile Include="Source\Service\Security\MoshAppAuthProvider.cs" />
     <Compile Include="Source\Service\Security\PasswordHelper.cs" />
     <Compile Include="Source\Units\Coordinate.cs" />
-    <Compile Include="Source\Utils\DynamicHelper.cs" />
+    <Compile Include="Source\Utils\DynamicExtensions.cs" />
     <Compile Include="Source\Utils\Extensions.cs" />
     <Compile Include="Source\Utils\ReflectionUtils.cs" />
     <Compile Include="Source\Utils\ServiceExtensions.cs" />

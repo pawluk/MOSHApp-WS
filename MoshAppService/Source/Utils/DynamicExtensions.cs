@@ -1,5 +1,5 @@
 ﻿// Project: MoshAppService
-// Filename: DynamicHelper.cs
+// Filename: DynamicExtensions.cs
 // 
 // Author: Jason Recillo
 
@@ -10,9 +10,10 @@ using System.Diagnostics;
 using System.Linq;
 
 namespace MoshAppService.Utils {
-    public static class DynamicHelper {
+    // Where C#'s static type system comes to die
+    public static class DynamicExtensions {
         [DebuggerHidden]
-        public static void AddToDynamicList(Dictionary<string, dynamic> dict, string key, dynamic obj) {
+        public static void AddToDynamicList(this Dictionary<string, dynamic> dict, string key, dynamic obj) {
             if (dict.ContainsKey(key)) {
                 dict[key].Add(obj);
             } else {

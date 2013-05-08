@@ -58,7 +58,7 @@ namespace MoshAppService.Service.Endpoints {
                     if (reader.HasRows) {
                         response["success"] = 1;
                         while (reader.Read()) {
-                            DynamicHelper.AddToDynamicList(response, "contacts", new {
+                            response.AddToDynamicList("contacts", new {
                                 id = reader.GetInt64("u_id"),
                                 nickname = reader.GetString("u_nickname"),
                                 firstname = reader.GetString("u_fname"),

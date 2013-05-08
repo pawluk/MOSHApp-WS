@@ -85,7 +85,7 @@ namespace MoshAppService.Service.Endpoints {
                                                 campuslat = row["c_lat"],
                                                 campuslng = row["c_lng"],
                                             };
-                                            DynamicHelper.AddToDynamicList(response, "scripts", new {
+                                            response.AddToDynamicList("scripts", new {
                                                 dictionaryid = row["td_id"],
                                                 text = row["direction"],
                                                 audio = row["audio"],
@@ -105,7 +105,7 @@ namespace MoshAppService.Service.Endpoints {
                                                 answer = "0";
                                             }
 
-                                            DynamicHelper.AddToDynamicList(response, "questions", new {
+                                            response.AddToDynamicList("questions", new {
                                                 questionid = row["q_id"],
                                                 questiontype = row["q_typ_id"],
                                                 question = row["q_text"],
@@ -133,7 +133,7 @@ namespace MoshAppService.Service.Endpoints {
                                     } else {
                                         if (!IsNull(row, "status")) {
                                             if (prvdid != Convert.ToInt64(row["td_id"])) {
-                                                DynamicHelper.AddToDynamicList(response, "scripts", new {
+                                                response.AddToDynamicList("scripts", new {
                                                     dictionaryid = row["td_id"],
                                                     text = row["direction"],
                                                     audio = row["audio"],
@@ -163,7 +163,7 @@ namespace MoshAppService.Service.Endpoints {
                                                 } else {
                                                     answer = "0";
                                                 }
-                                                DynamicHelper.AddToDynamicList(response, "questions", new {
+                                                response.AddToDynamicList("questions", new {
                                                     questionid = row["q_id"],
                                                     questiontype = row["q_typ_id"],
                                                     question = row["q_text"],

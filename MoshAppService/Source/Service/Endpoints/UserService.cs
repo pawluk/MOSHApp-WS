@@ -62,7 +62,7 @@ namespace MoshAppService.Service.Endpoints {
                                 response["nickname"] = reader.GetString("u_nickname");
                                 response["tname"] = reader.GetString("t_name");
                             }
-                            DynamicHelper.AddToDynamicList(response, "tasks", new {
+                            response.AddToDynamicList("tasks", new {
                                 taskname = reader.GetString("tsk_name"),
                                 taskstatus = reader.IsDBNull("status") ? 0 : reader.GetInt32("status"),
                                 time_spent = reader.IsDBNull("time_spent") ? 0 : reader.GetInt64("time_spent"),
