@@ -19,7 +19,6 @@ using MySql.Data.MySqlClient;
 
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 
 namespace MoshAppService.Service.Endpoints {
     [PublicAPI]
@@ -27,7 +26,9 @@ namespace MoshAppService.Service.Endpoints {
         private static readonly ILog Log = LogManager.GetLogger(typeof(TeamService));
 
         public object Get(Team request) {
-            if (request.Id == -1 || !IsLoggedIn) return UnauthorizedResponse();
+            if (request.Id == -1) return GetTeams(); // From PHP service
+
+            if (!IsLoggedIn) return UnauthorizedResponse();
 
             // Compare the user's team ID with the ID of the requested team
             if (TeamId != request.Id) return UnauthorizedResponse();
@@ -38,6 +39,60 @@ namespace MoshAppService.Service.Endpoints {
             return RequestContext.ToOptimizedResultUsingCache(Cache,
                                                               "Team" + Session.Id + request.Id,
                                                               () => TeamDbProvider.Instance[request.Id]);
+        }
+
+        private object GetTeams() {
+            try {
+                using (var conn = DbHelper.OpenConnection()) {
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "GetTeams",
+                        CommandType = CommandType.StoredProcedure,
+                    };
+
+                    var response = new Dictionary<string, dynamic> { { "success", 0 }, { "error", 0 } };
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.HasRows) {
+                        response["success"] = 1;
+                        var i = 0;
+                        var teams = new List<Dictionary<string, dynamic>>();
+                        while (reader.Read()) {
+                            var id = reader.GetInt64("t_id");
+                            var tname = reader.GetString("t_name");
+                            var timeSpent = reader.IsDBNull("time_spent") ? 0 : reader.GetInt64("time_spent");
+
+                            Action add = () => teams.Add(new Dictionary<string, dynamic> {
+                                { "id", id },
+                                { "tname", tname },
+                                { "time_spent", timeSpent },
+                            });
+
+                            if (i == 0) add();
+                            else {
+                                if (teams.Any(x => x["id"] == id)) teams.Single(x => x["id"] == id)["time_spent"] += timeSpent;
+                                else add();
+                            }
+                            i++;
+                        }
+                        foreach (var t in teams) response.AddToDynamicList("teams", t);
+
+                        // The original PHP service had two sort operations, this version has... this ಠ_ಠ
+                        var teamList = ((List<dynamic>) response["teams"]);
+                        var teamsWithTime = teamList.Where(x => x["time_spent"] != 0).ToList();
+                        teamList.RemoveAll(x => teamsWithTime.Contains(x));
+                        teamsWithTime.Sort((x, y) => x["time_spent"].CompareTo(y["time_spent"]));
+                        response["teams"] = teamList.Prepend(teamsWithTime);
+                    } else {
+                        response["error"] = 1;
+                        response["error_msg"] = "No teams found.";
+                    }
+                    return response;
+                }
+            } catch (Exception e) {
+                Log.Error(e.Message, e);
+                throw;
+            }
         }
 
         public object Get(TeamContact request) {
