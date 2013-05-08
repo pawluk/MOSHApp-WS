@@ -13,6 +13,7 @@ using System.Linq;
 using JetBrains.Annotations;
 
 using MoshAppService.Service.Database;
+using MoshAppService.Utils;
 
 using MySql.Data.MySqlClient;
 
@@ -217,15 +218,6 @@ namespace MoshAppService.Service.Endpoints {
         [DebuggerHidden]
         private static bool IsNull(DataRow row, string column) {
             return !(row.Table.Columns.Contains(column) && !row.IsNull(column));
-        }
-
-        [DebuggerHidden]
-        private static void AddToDynamicList(Dictionary<string, dynamic> dict, string key, dynamic obj) {
-            if (dict.ContainsKey(key)) {
-                dict[key].Add(obj);
-            } else {
-                dict[key] = new List<dynamic> { obj };
-            }
         }
     }
 }
