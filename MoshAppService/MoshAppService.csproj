@@ -146,6 +146,7 @@
     <Compile Include="Source\Service\Endpoints\Info.cs" />
     <Compile Include="Source\Service\Endpoints\InfoResponse.cs" />
     <Compile Include="Source\Service\Endpoints\InfoService.cs" />
+    <Compile Include="Source\Service\Endpoints\Init.cs" />
     <Compile Include="Source\Service\Endpoints\Leaderboard.cs" />
     <Compile Include="Source\Service\Endpoints\LeaderboardService.cs" />
     <Compile Include="Source\Service\Endpoints\MoshAppServiceBase.cs" />
