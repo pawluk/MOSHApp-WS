@@ -121,4 +121,14 @@ namespace MoshAppService.Service.Data {
             PhoneVisible = true;
         }
     }
+
+    [PublicAPI]
+    [Route("/users/{UserId}/taskdetails")]
+    public class UserTaskDetails {
+        public long UserId { get; set; }
+
+        public UserTaskDetails() {
+            UserId = -1;
+        }
+    }
 }

@@ -15,12 +15,10 @@ using MoshAppService.Service.Database;
 
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
 
 namespace MoshAppService.Service.Endpoints {
     [PublicAPI]
-    [Authenticate]
     public class TeamService : MoshAppServiceBase {
         private static readonly ILog Log = LogManager.GetLogger(typeof(TeamService));
 
