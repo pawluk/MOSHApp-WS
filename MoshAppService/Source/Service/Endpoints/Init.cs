@@ -47,7 +47,7 @@ namespace MoshAppService.Service.Endpoints {
 
                         // This code is ported (almost) directly from PHP to C#.
                         // As such, there is a lot of dynamically-typed code (using the dynamic keyword),
-                        // calls to Convert.* methods, and uses of Dictionary<> objects instead of associative arrays.
+                        // calls to Convert.* methods, and uses of anonymous types instead of associative arrays.
                         // This implementation has been /slightly/ modified from its original (uncommented)
                         // PHP implementation, as I had some serious trouble understanding the original
                         // at some points and could not see why some things were done they way they were.
@@ -69,29 +69,29 @@ namespace MoshAppService.Service.Endpoints {
                                 if (first) {
                                     if (i == 0) {
                                         if (!IsNull(row, "status")) {
-                                            response["userinfo"] = new Dictionary<string, dynamic> {
-                                                { "phoneoption", row["p_vsbl_tm"] },
-                                                { "emailoption", row["e_vsbl_tm"] },
-                                                { "teamid", row["t_id"] },
-                                                { "teamname", row["t_name"] },
-                                                { "gameid", row["g_id"] },
-                                                { "gamestart", row["start_time"] },
-                                                { "gamefinish", row["finis_time"] },
-                                                { "taskid", row["tsk_id"] },
-                                                { "tasksecret", row["secret_id"] },
-                                                { "taskname", row["tsk_name"] },
-                                                { "campusid", row["c_id"] },
-                                                { "campusname", row["c_name"] },
-                                                { "campuslat", row["c_lat"] },
-                                                { "campuslng", row["c_lng"] },
+                                            response["userinfo"] = new {
+                                                phoneoption = row["p_vsbl_tm"],
+                                                emailoption = row["e_vsbl_tm"],
+                                                teamid = row["t_id"],
+                                                teamname = row["t_name"],
+                                                gameid = row["g_id"],
+                                                gamestart = row["start_time"],
+                                                gamefinish = row["finis_time"],
+                                                taskid = row["tsk_id"],
+                                                tasksecret = row["secret_id"],
+                                                taskname = row["tsk_name"],
+                                                campusid = row["c_id"],
+                                                campusname = row["c_name"],
+                                                campuslat = row["c_lat"],
+                                                campuslng = row["c_lng"],
                                             };
-                                            AddToDynamicList(response, "scripts", new Dictionary<string, dynamic> {
-                                                { "dictionaryid", row["td_id"] },
-                                                { "text", row["direction"] },
-                                                { "audio", row["audio"] },
-                                                { "image", row["image"] },
-                                                { "lat", row["td_lat"] },
-                                                { "lng", row["td_lng"] },
+                                            DynamicHelper.AddToDynamicList(response, "scripts", new {
+                                                dictionaryid = row["td_id"],
+                                                text = row["direction"],
+                                                audio = row["audio"],
+                                                image = row["image"],
+                                                lat = row["td_lat"],
+                                                lng = row["td_lng"],
                                             });
 
                                             string answer;
@@ -105,41 +105,41 @@ namespace MoshAppService.Service.Endpoints {
                                                 answer = "0";
                                             }
 
-                                            AddToDynamicList(response, "questions", new Dictionary<string, dynamic> {
-                                                { "questionid", row["q_id"] },
-                                                { "questiontype", row["q_typ_id"] },
-                                                { "question", row["q_text"] },
-                                                { "questionstatus", !IsNull(row, "q_status") ? row["q_status"] : 0 },
-                                                { "answer", answer }
+                                            DynamicHelper.AddToDynamicList(response, "questions", new {
+                                                questionid = row["q_id"],
+                                                questiontype = row["q_typ_id"],
+                                                question = row["q_text"],
+                                                questionstatus = !IsNull(row, "q_status") ? row["q_status"] : 0,
+                                                answer = answer,
                                             });
                                         } else {
                                             if (!IsNull(row, "g_id")) {
-                                                response["userinfo"] = new Dictionary<string, dynamic> {
-                                                    { "phoneoption", row["p_vsbl_tm"] },
-                                                    { "emailoption", row["e_vsbl_tm"] },
-                                                    { "teamid", row["t_id"] },
-                                                    { "teamname", row["t_name"] },
-                                                    { "gameid", row["g_id"] },
-                                                    { "gamestart", row["start_time"] },
-                                                    { "gamefinish", row["finis_time"] },
+                                                response["userinfo"] = new {
+                                                    phoneoption = row["p_vsbl_tm"],
+                                                    emailoption = row["e_vsbl_tm"],
+                                                    teamid = row["t_id"],
+                                                    teamname = row["t_name"],
+                                                    gameid = row["g_id"],
+                                                    gamestart = row["start_time"],
+                                                    gamefinish = row["finis_time"],
                                                 };
                                             } else {
-                                                response["userinfo"] = new Dictionary<string, dynamic> {
-                                                    { "phoneoption", row["p_vsbl_tm"] },
-                                                    { "emailoption", row["e_vsbl_tm"] },
+                                                response["userinfo"] = new {
+                                                    phoneoption = row["p_vsbl_tm"],
+                                                    emailoption = row["e_vsbl_tm"],
                                                 };
                                             }
                                         }
                                     } else {
                                         if (!IsNull(row, "status")) {
                                             if (prvdid != Convert.ToInt64(row["td_id"])) {
-                                                AddToDynamicList(response, "scripts", new Dictionary<string, dynamic> {
-                                                    { "dictionaryid", row["td_id"] },
-                                                    { "text", row["direction"] },
-                                                    { "audio", row["audio"] },
-                                                    { "image", row["image"] },
-                                                    { "lat", row["td_lat"] },
-                                                    { "lng", row["td_lng"] },
+                                                DynamicHelper.AddToDynamicList(response, "scripts", new {
+                                                    dictionaryid = row["td_id"],
+                                                    text = row["direction"],
+                                                    audio = row["audio"],
+                                                    image = row["image"],
+                                                    lat = row["td_lat"],
+                                                    lng = row["td_lng"],
                                                 });
                                             }
 
@@ -163,12 +163,12 @@ namespace MoshAppService.Service.Endpoints {
                                                 } else {
                                                     answer = "0";
                                                 }
-                                                AddToDynamicList(response, "questions", new Dictionary<string, dynamic> {
-                                                    { "questionid", row["q_id"] },
-                                                    { "questiontype", row["q_typ_id"] },
-                                                    { "question", row["q_text"] },
-                                                    { "questionstatus", !IsNull(row, "q_status") ? row["q_status"] : 0 },
-                                                    { "answer", answer },
+                                                DynamicHelper.AddToDynamicList(response, "questions", new {
+                                                    questionid = row["q_id"],
+                                                    questiontype = row["q_typ_id"],
+                                                    question = row["q_text"],
+                                                    questionstatus = !IsNull(row, "q_status") ? row["q_status"] : 0,
+                                                    answer = answer,
                                                 });
                                             }
                                         }
@@ -183,19 +183,19 @@ namespace MoshAppService.Service.Endpoints {
                                 count++;
                                 if (number == count && !first) {
                                     if (!IsNull(row, "g_id")) {
-                                        response["userinfo"] = new Dictionary<string, dynamic> {
-                                            { "phoneoption", row["p_vsbl_tm"] },
-                                            { "emailoption", row["e_vsbl_tm"] },
-                                            { "teamid", row["t_id"] },
-                                            { "teamname", row["t_name"] },
-                                            { "gameid", row["g_id"] },
-                                            { "gamestart", row["start_time"] },
-                                            { "gamefinish", row["finis_time"] },
+                                        response["userinfo"] = new {
+                                            phoneoption = row["p_vsbl_tm"],
+                                            emailoption = row["e_vsbl_tm"],
+                                            teamid = row["t_id"],
+                                            teamname = row["t_name"],
+                                            gameid = row["g_id"],
+                                            gamestart = row["start_time"],
+                                            gamefinish = row["finis_time"],
                                         };
                                     } else {
-                                        response["userinfo"] = new Dictionary<string, dynamic> {
-                                            { "phoneoption", row["p_vsbl_tm"] },
-                                            { "emailoption", row["e_vsbl_tm"] },
+                                        response["userinfo"] = new {
+                                            phoneoption = row["p_vsbl_tm"],
+                                            emailoption = row["e_vsbl_tm"],
                                         };
                                     }
                                 }
