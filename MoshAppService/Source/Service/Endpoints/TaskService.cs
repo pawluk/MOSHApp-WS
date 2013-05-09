@@ -6,27 +6,76 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 using JetBrains.Annotations;
 
 using MoshAppService.Service.Data.Tasks;
 using MoshAppService.Service.Database;
+using MoshAppService.Utils;
 
+using MySql.Data.MySqlClient;
+
+using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 
 namespace MoshAppService.Service.Endpoints {
     public class TaskService : MoshAppServiceBase {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(TaskService));
+
         // Users will be able to access /tasks to get all the tasks they have been assigned
         // Users can access individual tasks at /tasks/{id} as long as they have been assigned that task
         [PublicAPI]
         public object Get(Task request) {
-            if (request.Id == -1 || !IsLoggedIn) return UnauthorizedResponse();
+            if (!IsLoggedIn) return UnauthorizedResponse();
+            if (request.Id == -1) return GetTasks(); // From PHP service
             // Only allow the user to see tasks with which they have been assigned
 
             return RequestContext.ToOptimizedResultUsingCache(Cache,
                                                               "Task" + Session.Id + request.Id + GameId,
                                                               () => TaskDbProvider.Instance[request.Id, GameId]);
+        }
+
+        private object GetTasks() {
+            try {
+                using (var conn = DbHelper.OpenConnection()) {
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "GetAllAvailableTasks",
+                        CommandType = CommandType.StoredProcedure,
+                    };
+                    cmd.Parameters.AddWithValue("UserId", UserId);
+                    cmd.Parameters.AddWithValue("GameId", GameId);
+
+                    var response = new Dictionary<string, dynamic> { { "success", 0 }, { "error", 0 } };
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.HasRows) {
+                        response["success"] = 1;
+                        while (reader.Read()) {
+                            response.AddToDynamicList("tasks", new {
+                                requiredtsk = !reader.IsDBNull("prv_tsk_id") ? reader.GetString("prv_tsk_id") : "None",
+                                taskid = reader.GetInt64("tsk_id"),
+                                status = !reader.IsDBNull("status") ? reader.GetInt32("status") : 0,
+                                taskname = reader.GetString("tsk_name"),
+                                campusid = reader.GetInt64("c_id"),
+                                campusname = reader.GetString("c_name"),
+                                campuslat = reader.GetDouble("c_lat"),
+                                campuslng = reader.GetDouble("c_lng"),
+                            });
+                        }
+                    } else {
+                        response["error"] = 1;
+                        response["error_msg"] = "No tasks found.";
+                    }
+
+                    return response;
+                }
+            } catch (Exception e) {
+                Log.Error(e.Message, e);
+                throw;
+            }
         }
     }
 }
