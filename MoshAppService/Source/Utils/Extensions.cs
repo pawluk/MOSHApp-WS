@@ -22,21 +22,25 @@ namespace MoshAppService.Utils {
         }
 
         public static IEnumerable<T> Prepend<T>(this IEnumerable<T> source, T item) {
+            if (source == null) throw new ArgumentNullException("source");
             yield return item;
             foreach (var s in source) yield return s;
         }
 
         public static IEnumerable<T> Prepend<T>(this IEnumerable<T> source, IEnumerable<T> items) {
+            if (source == null) throw new ArgumentNullException("source");
             foreach (var i in items) yield return i;
             foreach (var s in source) yield return s;
         }
 
         public static IEnumerable<T> Append<T>(this IEnumerable<T> source, T item) {
+            if (source == null) throw new ArgumentNullException("source");
             foreach (var s in source) yield return s;
             yield return item;
         }
 
         public static IEnumerable<T> Append<T>(this IEnumerable<T> source, IEnumerable<T> items) {
+            if (source == null) throw new ArgumentNullException("source");
             foreach (var s in source) yield return s;
             foreach (var i in items) yield return i;
         }
