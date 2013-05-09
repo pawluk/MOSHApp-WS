@@ -15,7 +15,7 @@ using ServiceStack.ServiceHost;
 namespace MoshAppService.Service.Data.Tasks {
     [PublicAPI]
     [Route("/tasks")]
-    [Route("/tasks/{Id}", "GET")]
+    [Route("/tasks/{Id}")]
     public class Task : Entity<Task> {
         #region Properties
 

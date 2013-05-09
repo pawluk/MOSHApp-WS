@@ -38,6 +38,42 @@ namespace MoshAppService.Service.Endpoints {
         }
 
         [PublicAPI]
+        public object Post(Task request) {
+            if (request.Id == -1 || !IsLoggedIn) return UnauthorizedResponse();
+
+            MySqlTransaction tx = null;
+            try {
+                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "AcceptTask",
+                        CommandType = CommandType.StoredProcedure,
+                    };
+                    cmd.Parameters.AddWithValue("TeamId", TeamId);
+                    cmd.Parameters.AddWithValue("TaskId", request.Id);
+                    cmd.Parameters.AddWithValue("UserId", UserId);
+                    cmd.Parameters.AddWithValue("Status", Request.FormData["status"]);
+
+                    var success = cmd.ExecuteNonQuery() != 0;
+
+                    if (success) tx.Commit();
+
+                    return success ?
+                               InitService.GetInitInfo(UserId) :
+                               BadRequestResponse();
+                }
+            } catch (Exception e) {
+                if (tx != null) {
+                    try {
+                        tx.Rollback();
+                    } catch (InvalidOperationException) { }
+                }
+                Log.Error(e.Message, e);
+                throw;
+            }
+        }
+
+        [PublicAPI]
         public object Get(TaskDetail request) {
             if (request.TaskId == -1 || !IsLoggedIn) return UnauthorizedResponse();
 

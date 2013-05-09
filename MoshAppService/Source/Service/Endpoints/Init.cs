@@ -29,6 +29,10 @@ namespace MoshAppService.Service.Endpoints {
             if (!IsLoggedIn) return UnauthorizedResponse();
 
             //TODO: Extract this to own class
+            return GetInitInfo(UserId);
+        }
+
+        public static object GetInitInfo(long userid) {
             try {
                 using (var conn = DbHelper.OpenConnection()) {
                     var cmd = new MySqlCommand {
@@ -36,7 +40,7 @@ namespace MoshAppService.Service.Endpoints {
                         CommandText = "GetUserInitInfo",
                         CommandType = CommandType.StoredProcedure,
                     };
-                    cmd.Parameters.AddWithValue("UserId", UserId);
+                    cmd.Parameters.AddWithValue("UserId", userid);
 
                     var response = new Dictionary<string, dynamic> { { "success", 0 }, { "error", 0 } };
                     var reader = cmd.ExecuteReader();
