@@ -77,6 +77,16 @@ namespace MoshAppService.Service.Data {
     }
 
     [PublicAPI]
+    [Route("/teams/{TeamId}/members")]
+    public class TeamMembers {
+        public long TeamId { get; set; }
+
+        public TeamMembers() {
+            TeamId = -1;
+        }
+    }
+
+    [PublicAPI]
     [Route("/teams/contact")]
     public class TeamContact { }
 }

@@ -81,6 +81,47 @@ namespace MoshAppService.Service.Endpoints {
             }
         }
 
+        public object Get(TeamMembers request) {
+            if (request.TeamId == -1) return UnauthorizedResponse();
+
+            try {
+                using (var conn = DbHelper.OpenConnection()) {
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "GetTeamMembers",
+                        CommandType = CommandType.StoredProcedure,
+                    };
+                    cmd.Parameters.AddWithValue("TeamId", request.TeamId);
+
+                    var response = new Dictionary<string, dynamic> { { "success", 0 }, { "error", 0 } };
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.HasRows) {
+                        response["success"] = 1;
+                        var i = 0;
+                        while (reader.Read()) {
+                            if (i == 0) response["tname"] = reader.GetString("t_name");
+
+                            response.AddToDynamicList("teammembers", new {
+                                id = reader.GetInt64("u_id"),
+                                nickname = reader.GetString("u_nickname"),
+                                time_spent = reader.IsDBNull("time_spent") ? 0 : reader.GetInt64("time_spent"),
+                            });
+                            i++;
+                        }
+                    } else {
+                        response["error"] = 1;
+                        response["error_msg"] = "No teams or teammates found.";
+                    }
+
+                    return response;
+                }
+            } catch (Exception e) {
+                Log.Error(e.Message, e);
+                throw;
+            }
+        }
+
         private object GetTeams() {
             try {
                 using (var conn = DbHelper.OpenConnection()) {
