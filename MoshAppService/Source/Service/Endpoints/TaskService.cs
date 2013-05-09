@@ -37,6 +37,51 @@ namespace MoshAppService.Service.Endpoints {
                                                               () => TaskDbProvider.Instance[request.Id, GameId]);
         }
 
+        [PublicAPI]
+        public object Get(TaskDetail request) {
+            if (request.TaskId == -1 || !IsLoggedIn) return UnauthorizedResponse();
+
+            try {
+                using (var conn = DbHelper.OpenConnection()) {
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "GetTaskDetail",
+                        CommandType = CommandType.StoredProcedure,
+                    };
+                    cmd.Parameters.AddWithValue("TaskId", request.TaskId);
+
+                    var response = new Dictionary<string, dynamic> { { "success", 0 }, { "error", 0 } };
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.HasRows) {
+                        response["success"] = 1;
+                        reader.Read();
+                        var numDicts = 0;
+                        var numQuestions = 0;
+                        response["taskname"] = reader.GetString("tsk_name");
+                        response["campus"] = reader.GetString("c_name");
+                        response["campuslat"] = reader.GetDouble("c_lat");
+                        response["campuslng"] = reader.GetDouble("c_lng");
+
+                        do {
+                            numQuestions += reader.GetInt32("questions");
+                            numDicts++;
+                            response["numberofdic"] = numDicts;
+                            response["questions"] = numQuestions;
+                        } while (reader.Read());
+                    } else {
+                        response["error"] = 1;
+                        response["error_msg"] = "No tasks found.";
+                    }
+
+                    return response;
+                }
+            } catch (Exception e) {
+                Log.Error(e.Message, e);
+                throw;
+            }
+        }
+
         private object GetTasks() {
             try {
                 using (var conn = DbHelper.OpenConnection()) {

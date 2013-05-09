@@ -177,7 +177,6 @@ namespace MoshAppService.Service.Endpoints {
                                         prvdid = Convert.ToInt64(row["td_id"]);
                                         prvqid += Convert.ToString(row["q_id"]) + '&';
                                     }
-                                    Global.Log.Debug(prvqid);
                                     i++; // Why this was being incremented here, I have no idea.
                                 }
                                 count++;

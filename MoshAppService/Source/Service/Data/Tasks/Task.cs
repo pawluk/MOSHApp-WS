@@ -71,4 +71,13 @@ namespace MoshAppService.Service.Data.Tasks {
 
         #endregion
     }
+
+    [Route("/tasks/{TaskId}/detail")]
+    public class TaskDetail {
+        public long TaskId { get; set; }
+
+        public TaskDetail() {
+            TaskId = -1;
+        }
+    }
 }
