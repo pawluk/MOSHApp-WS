@@ -41,6 +41,46 @@ namespace MoshAppService.Service.Endpoints {
                                                               () => TeamDbProvider.Instance[request.Id]);
         }
 
+        public object Get(TeamContact request) {
+            if (!IsLoggedIn) return UnauthorizedResponse();
+
+            try {
+                using (var conn = DbHelper.OpenConnection()) {
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "GetContact",
+                        CommandType = CommandType.StoredProcedure,
+                    };
+                    cmd.Parameters.AddWithValue("UserId", UserId);
+
+                    var response = new Dictionary<string, dynamic> { { "success", 0 }, { "error", 0 } };
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.HasRows) {
+                        response["success"] = 1;
+                        while (reader.Read()) {
+                            response.AddToDynamicList("contacts", new {
+                                id = reader.GetInt64("u_id"),
+                                nickname = reader.GetString("u_nickname"),
+                                firstname = reader.GetString("u_fname"),
+                                lastname = reader.GetString("u_lastname"),
+                                email = reader.GetBoolean("e_vsbl_tm") ? reader.GetString("u_email") : null,
+                                phone = reader.GetBoolean("p_vsbl_tm") ? reader.GetString("u_phone") : null,
+                            });
+                        }
+                    } else {
+                        response["error"] = 1;
+                        response["error_msg"] = "No teams or teammates found.";
+                    }
+
+                    return response;
+                }
+            } catch (Exception e) {
+                Log.Error(e.Message, e);
+                throw;
+            }
+        }
+
         private object GetTeams() {
             try {
                 using (var conn = DbHelper.OpenConnection()) {
@@ -87,46 +127,6 @@ namespace MoshAppService.Service.Endpoints {
                         response["error"] = 1;
                         response["error_msg"] = "No teams found.";
                     }
-                    return response;
-                }
-            } catch (Exception e) {
-                Log.Error(e.Message, e);
-                throw;
-            }
-        }
-
-        public object Get(TeamContact request) {
-            if (!IsLoggedIn) return UnauthorizedResponse();
-
-            try {
-                using (var conn = DbHelper.OpenConnection()) {
-                    var cmd = new MySqlCommand {
-                        Connection = conn,
-                        CommandText = "GetContact",
-                        CommandType = CommandType.StoredProcedure,
-                    };
-                    cmd.Parameters.AddWithValue("UserId", UserId);
-
-                    var response = new Dictionary<string, dynamic> { { "success", 0 }, { "error", 0 } };
-                    var reader = cmd.ExecuteReader();
-
-                    if (reader.HasRows) {
-                        response["success"] = 1;
-                        while (reader.Read()) {
-                            response.AddToDynamicList("contacts", new {
-                                id = reader.GetInt64("u_id"),
-                                nickname = reader.GetString("u_nickname"),
-                                firstname = reader.GetString("u_fname"),
-                                lastname = reader.GetString("u_lastname"),
-                                email = reader.GetBoolean("e_vsbl_tm") ? reader.GetString("u_email") : null,
-                                phone = reader.GetBoolean("p_vsbl_tm") ? reader.GetString("u_phone") : null,
-                            });
-                        }
-                    } else {
-                        response["error"] = 1;
-                        response["error_msg"] = "No teams or teammates found.";
-                    }
-
                     return response;
                 }
             } catch (Exception e) {
