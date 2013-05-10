@@ -141,6 +141,7 @@
     <Compile Include="Source\Service\Data\Tasks\QuestionType.cs" />
     <Compile Include="Source\Service\Data\Tasks\TaskDict.cs" />
     <Compile Include="Source\Service\Data\Tasks\Task.cs" />
+    <Compile Include="Source\Service\Endpoints\AuthCheckService.cs" />
     <Compile Include="Source\Service\Endpoints\DataUploadService.cs" />
     <Compile Include="Source\Service\Endpoints\GameService.cs" />
     <Compile Include="Source\Service\Endpoints\Info.cs" />
