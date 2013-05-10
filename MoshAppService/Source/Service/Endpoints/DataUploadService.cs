@@ -88,7 +88,6 @@ namespace MoshAppService.Service.Endpoints {
             }
             Log(users.Dump());
 
-            //TODO: Save the user data to the database
             var output = new List<dynamic>();
             foreach (var u in users) {
                 dynamic credentials;

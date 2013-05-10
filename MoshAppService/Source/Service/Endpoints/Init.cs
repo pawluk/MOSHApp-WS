@@ -28,7 +28,6 @@ namespace MoshAppService.Service.Endpoints {
         public object Get(Init request) {
             if (!IsLoggedIn) return UnauthorizedResponse();
 
-            //TODO: Extract this to own class
             return GetInitInfo(UserId);
         }
 
