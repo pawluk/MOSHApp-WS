@@ -126,6 +126,7 @@ namespace MoshAppService.Service.Endpoints {
                         CommandText = "GetAllAvailableTasks",
                         CommandType = CommandType.StoredProcedure,
                     };
+                    cmd.Parameters.AddWithValue("TeamId", TeamId);
                     cmd.Parameters.AddWithValue("UserId", UserId);
                     cmd.Parameters.AddWithValue("GameId", GameId);
 
@@ -139,6 +140,7 @@ namespace MoshAppService.Service.Endpoints {
                                 requiredtsk = !reader.IsDBNull("prv_tsk_id") ? reader.GetString("prv_tsk_id") : "None",
                                 taskid = reader.GetInt64("tsk_id"),
                                 status = !reader.IsDBNull("status") ? reader.GetInt32("status") : 0,
+                                user = !reader.IsDBNull("user") ? reader.GetString("user") : "0",
                                 taskname = reader.GetString("tsk_name"),
                                 campusid = reader.GetInt64("c_id"),
                                 campusname = reader.GetString("c_name"),
