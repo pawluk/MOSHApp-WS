@@ -50,7 +50,9 @@ namespace MoshAppService.Service {
             const Feature disableFeatures = Feature.Soap | Feature.Xml | Feature.Csv | Feature.Jsv;
             SetConfig(new EndpointHostConfig {
                 EnableFeatures = Feature.All.Remove(disableFeatures),
+#if DEBUG
                 DebugMode = true,
+#endif
                 DefaultContentType = ContentType.Json
             });
 
