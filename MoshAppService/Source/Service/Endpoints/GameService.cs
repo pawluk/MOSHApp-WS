@@ -6,19 +6,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
-using System.Net;
 
 using JetBrains.Annotations;
 
 using MoshAppService.Service.Data;
 using MoshAppService.Service.Database;
-using MoshAppService.Utils;
 
-using ServiceStack.Common.Web;
+using MySql.Data.MySqlClient;
+
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 
 namespace MoshAppService.Service.Endpoints {
     public class GameService : MoshAppServiceBase {
@@ -37,19 +36,65 @@ namespace MoshAppService.Service.Endpoints {
         // providing the game ID in the url, and the task ID and answer in
         // either application/json or application/x-www-form-urlencoded format
         [PublicAPI]
-        public object Post(CheckIn request) {
-            //TODO: Get game from database
-            Log.Debug("/games/{1}/checkin:{0}{2}".F(Environment.NewLine, request.GameId, request.Dump()));
-            Log.Debug("{0} has checked in".F(Cache.Get<User>("User {0}".F(UserId)).Nickname));
+        public object Post(CheckIn checkIn) {
+            if (checkIn.GameId != GameId || checkIn.TaskId == -1 || checkIn.QuestionId == -1 || !IsLoggedIn) return UnauthorizedResponse();
 
-            var key = "Game " + request.GameId;
-            if (Cache.Get<Game>(key) == null)
-                Cache.Set(key, GameDbProvider.Instance[request.GameId]);
+            MySqlTransaction tx = null;
+            try {
+                using (var conn = DbHelper.OpenConnectionAndBeginTransaction(out tx)) {
+                    var response = new Dictionary<string, dynamic> { { "success", 0 }, { "error", 0 } };
+                    if (checkIn.Response == "" && checkIn.Location != "") checkIn.Response = "My Picture";
 
-            // TODO: Check-in logic here
+                    response["test"] = checkIn.Response;
+                    var cmd = new MySqlCommand {
+                        Connection = conn,
+                        CommandText = "InsertResponse",
+                        CommandType = CommandType.StoredProcedure,
+                    };
+                    cmd.Parameters.AddWithValue("TeamId", TeamId);
+                    cmd.Parameters.AddWithValue("UserId", UserId);
+                    cmd.Parameters.AddWithValue("TaskId", checkIn.TaskId);
+                    cmd.Parameters.AddWithValue("QuestionId", checkIn.QuestionId);
+                    cmd.Parameters.AddWithValue("UResponse", checkIn.Response);
+                    cmd.Parameters.AddWithValue("ULocation", checkIn.Location);
 
-            RequestContext.RemoveFromCache(Cache, "Leaderboard");
-            return new HttpResult(null, HttpStatusCode.NoContent);
+                    var addResponse = Convert.ToString(cmd.ExecuteScalar());
+
+                    tx.Commit();
+
+                    if (addResponse == "100") {
+                        response["error"] = 1;
+                        response["answered"] = 1;
+                        response["error_msg"] = "You have already answered this question.";
+                    } else {
+                        if (addResponse != "0") {
+                            switch (addResponse) {
+                                case "gamecomplete":
+                                    response["success"] = 1;
+                                    response["gamecomplete"] = 1;
+                                    break;
+                                case "taskcomplete":
+                                    return InitService.GetInitInfo(UserId);
+                                default:
+                                    response["success"] = 1;
+                                    break;
+                            }
+                        } else {
+                            response["error"] = 1;
+                            response["error_msg"] = "An unknown error occurred while submitting your response.";
+                        }
+                    }
+                    return response;
+                }
+            } catch (Exception e) {
+                if (tx != null) {
+                    try {
+                        tx.Rollback();
+                    } catch (InvalidOperationException) { }
+                }
+                Log.Error(e.Message, e);
+                throw;
+            }
         }
     }
 }

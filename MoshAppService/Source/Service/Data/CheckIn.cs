@@ -18,6 +18,13 @@ namespace MoshAppService.Service.Data {
     public class CheckIn {
         public long GameId { get; set; }
         public long TaskId { get; set; }
-        public string Answer { get; set; }
+        public long QuestionId { get; set; }
+        public string Response { get; set; }
+        public string Location { get; set; }
+
+        public CheckIn() {
+            GameId = TaskId = QuestionId = -1;
+            Response = Location = "";
+        }
     }
 }
